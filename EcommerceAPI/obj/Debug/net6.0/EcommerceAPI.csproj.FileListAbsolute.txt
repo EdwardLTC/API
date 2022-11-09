@@ -263,5 +263,5 @@ G:\Project_First\API\EcommerceAPI\bin\Debug\net6.0\runtimes\win\lib\net6.0\Syste
 G:\Project_First\API\EcommerceAPI\bin\Debug\net6.0\runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll
 G:\Project_First\API\EcommerceAPI\bin\Debug\net6.0\runtimes\win\lib\net6.0\System.Windows.Extensions.dll
 G:\Project_First\API\EcommerceAPI\bin\Debug\net6.0\libman.json
-G:\Project_First\API\EcommerceAPI\obj\Debug\net6.0\EcommerceAPI.RazorAssemblyInfo.cache
-G:\Project_First\API\EcommerceAPI\obj\Debug\net6.0\EcommerceAPI.RazorAssemblyInfo.cs
+G:\Project_First\API\EcommerceAPI\obj\Debug\net6.0\EcommerceAPI.Properties.Resources.resources
+G:\Project_First\API\EcommerceAPI\obj\Debug\net6.0\EcommerceAPI.csproj.GenerateResource.cache

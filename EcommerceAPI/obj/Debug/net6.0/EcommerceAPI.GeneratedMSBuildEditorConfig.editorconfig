@@ -14,27 +14,3 @@ build_property.SupportLocalizedComponentNames =
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
 build_property.MSBuildProjectDirectory = G:\Project_First\API\EcommerceAPI
 build_property._RazorSourceGeneratorDebug = 
-
-[G:/Project_First/API/EcommerceAPI/Controller/Create.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Q29udHJvbGxlclxDcmVhdGUuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
-[G:/Project_First/API/EcommerceAPI/Controller/Delete.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Q29udHJvbGxlclxEZWxldGUuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
-[G:/Project_First/API/EcommerceAPI/Controller/Details.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Q29udHJvbGxlclxEZXRhaWxzLmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[G:/Project_First/API/EcommerceAPI/Controller/Edit.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Q29udHJvbGxlclxFZGl0LmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[G:/Project_First/API/EcommerceAPI/Controller/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Q29udHJvbGxlclxJbmRleC5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
-[G:/Project_First/API/EcommerceAPI/Pages/_ValidationScriptsPartial.cshtml]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXNcX1ZhbGlkYXRpb25TY3JpcHRzUGFydGlhbC5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 

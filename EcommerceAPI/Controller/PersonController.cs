@@ -77,7 +77,7 @@ namespace EcommerceAPI.Controller
             _resGetListPerson._Respon = new Respon { respone_code = 200, Status = "Success" };
             _resGetListPerson._PersonRes = listRes;
 
-            return Ok(listRes);
+            return Ok(_resGetListPerson);
         }
 
         [Route("GetPersonWhere")]
@@ -139,22 +139,25 @@ namespace EcommerceAPI.Controller
         [HttpPost]
         public async Task<ActionResult<IEnumerable<Respon>>> PutPerson(PersonReq personReq)
         {
-            var person = new Person();
-            int id = personReq.Id;
-            person.Name = personReq.Name;
-            person.Address = personReq.Address;
-            person.Role = personReq.Role;
-            person.Mail = personReq.Mail;
-            person.ImgUrl = personReq.ImgUrl;
-            person.PhoneNum = personReq.PhoneNum;
+            var person = new Person
+            {
+                Id = personReq.Id,
+                Name = personReq.Name,
+                Address = personReq.Address,
+                Role = personReq.Role,
+                Mail = personReq.Mail,
+                ImgUrl = personReq.ImgUrl,
+                PhoneNum = personReq.PhoneNum
+            };
+            _context.Entry(person).State = EntityState.Modified;
             try
             {
-                _context.Entry(person).State = EntityState.Modified;
+           
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!PersonExists(id))
+                if (!PersonExists(person.Id))
                 {
                     return Ok(new Respon { respone_code = 404, Status = "not found" });
                 }
