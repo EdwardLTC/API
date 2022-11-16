@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EcommerceAPI.Models;
+using EcommerceAPI.Models.Models_Respon;
+using EcommerceAPI.Models.Models_Respone;
+using EcommerceAPI.Models.Models_Request;
 
 namespace EcommerceAPI.Controller
 {
@@ -22,46 +25,83 @@ namespace EcommerceAPI.Controller
 
         [Route("GetAllClothes")]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Clothe>>> GetClothes()
+        public async Task<ActionResult<IEnumerable<ResGetListClothes>>> GetClothes()
         {
-            return await _context.Clothes.ToListAsync();
+            ResGetListClothes resGetListClothes = new ResGetListClothes();  
+            List<Clothe> list = await _context.Clothes.ToListAsync();
+            List<ClothesRes> res = new List<ClothesRes>();
+            foreach(Clothe clothes in list)
+            {
+                ClothesRes respon =  new ClothesRes
+                {
+                    Id = clothes.Id,
+                    Name = clothes.Name,
+                    Idseller = clothes.Idseller,
+                    Des = clothes.Des,
+                    IdCategory = clothes.IdCategory,
+                };
+                List<string> listImgUrls = await _context.ImgUrls.Where(x => x.Idclothes == clothes.Id).Select(u => u.ImgUrl1).ToListAsync();
+                respon.imgsUrl = listImgUrls;
+                res.Add(respon);
+            }
+            resGetListClothes._Respon = new Respon {respone_code= 200, Status= "Success" };
+            resGetListClothes._ClothesRes = res;
+            return Ok(resGetListClothes);
         }
 
-        // GET: api/Clothes/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Clothe>> GetClothe(int id)
+        [Route("GetClothesWhere")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<ResGetClothes>>> GetClothe(int id)
         {
+            ResGetClothes resGetClothes = new ResGetClothes();
             var clothe = await _context.Clothes.FindAsync(id);
-
+            List<string> listImgUrls = await _context.ImgUrls.Where(x => x.Idclothes == id).Select(u => u.ImgUrl1).ToListAsync();
             if (clothe == null)
             {
-                return NotFound();
+                resGetClothes._Respon = new Respon { respone_code = 404, Status = "Not Found" };
+                return Ok(resGetClothes) ;
             }
 
-            return clothe;
+            var clothesRes = new ClothesRes
+            {
+                Id = clothe.Id,
+                Name = clothe.Name,
+                Idseller = clothe.Idseller,
+                Des = clothe.Des,
+                IdCategory = clothe.IdCategory,
+                imgsUrl = listImgUrls
+            };
+            resGetClothes._Respon = new Respon { respone_code = 200, Status = "Success" };
+            resGetClothes._ClothesRes = clothesRes;
+            return Ok(resGetClothes);
         }
 
-        // PUT: api/Clothes/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutClothe(int id, Clothe clothe)
+        [Route("UpdateClothes")]
+        [HttpPost]
+        public async Task<ActionResult<IEnumerable<Respon>>> PutClothe(ClothesReq clothesReq)
         {
-            if (id != clothe.Id)
+            Clothe clothe = new Clothe
             {
-                return BadRequest();
-            }
-
+                Id = clothesReq.Id,
+                IdCategory = clothesReq.IdCategory,
+                Idseller = clothesReq.Idseller,
+                Des = clothesReq.Des,
+                Name = clothesReq.Name
+            };
             _context.Entry(clothe).State = EntityState.Modified;
-
+            foreach(String url in clothesReq.imgUrls)
+            {
+                _context.ImgUrls.Add(new ImgUrl {Idclothes = clothesReq.Id,ImgUrl1 = url});
+            }
             try
             {
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!ClotheExists(id))
+                if (!ClotheExists(clothesReq.Id))
                 {
-                    return NotFound();
+                    return Ok(new Respon { respone_code = 404, Status = "not found" });
                 }
                 else
                 {
@@ -69,34 +109,72 @@ namespace EcommerceAPI.Controller
                 }
             }
 
-            return NoContent();
+            return Ok(new Respon { respone_code = 200, Status = "Success" });
         }
 
-        // POST: api/Clothes
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Route("CreateClothes")]
         [HttpPost]
-        public async Task<ActionResult<Clothe>> PostClothe(Clothe clothe)
+        public async Task <ActionResult<IEnumerable<Respon>>> PostClothe(ClothesReq clothesReq)
         {
-            _context.Clothes.Add(clothe);
-            await _context.SaveChangesAsync();
+            var ImgUrlstemp = new HashSet<ImgUrl>();
 
-            return CreatedAtAction("GetClothe", new { id = clothe.Id }, clothe);
-        }
-
-        // DELETE: api/Clothes/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteClothe(int id)
-        {
-            var clothe = await _context.Clothes.FindAsync(id);
-            if (clothe == null)
+            Clothe clothe = new Clothe
             {
-                return NotFound();
+                Idseller = clothesReq.Idseller,
+                Name = clothesReq.Name,
+                IdCategory = clothesReq.IdCategory,
+                Des = clothesReq.Des,
+
+            };
+            _context.Clothes.Add(clothe);
+            try
+            {
+                await _context.SaveChangesAsync();
+                foreach (String url in clothesReq.imgUrls)
+                {
+                    _context.ImgUrls.Add(new ImgUrl { Idclothes = clothe.Id, ImgUrl1 = url });
+                }
+                await _context.SaveChangesAsync();
+
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+
+                return Ok(new Respon { respone_code = 400, Status = "create failed" });
+
             }
 
-            _context.Clothes.Remove(clothe);
-            await _context.SaveChangesAsync();
+            return Ok(new Respon { respone_code = 200, Status = "Success" });
+        }
 
-            return NoContent();
+        [Route("DeleteClothes")]
+        [HttpPost]
+        public async Task<IActionResult> DeleteClothe(int id)
+        {
+           
+            Respon res = new();
+            try
+            {
+                var clothe = await _context.Clothes.FindAsync(id);
+                if (clothe == null)
+                {
+                    res.respone_code = 404;
+                    res.Status = "Not Found";
+                    return Ok(res);
+                }
+
+                _context.Clothes.Remove(clothe);
+                await _context.SaveChangesAsync();
+            }
+            catch
+            {
+                res.respone_code = 400;
+                res.Status = "bad Request";
+                return Ok(res);
+            }
+            res.respone_code = 200;
+            res.Status = "Success";
+            return Ok(res);
         }
 
         private bool ClotheExists(int id)

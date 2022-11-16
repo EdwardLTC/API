@@ -263,3 +263,5 @@ G:\Project_First\API\EcommerceAPI\obj\Release\net6.0\refint\EcommerceAPI.dll
 G:\Project_First\API\EcommerceAPI\obj\Release\net6.0\EcommerceAPI.pdb
 G:\Project_First\API\EcommerceAPI\obj\Release\net6.0\EcommerceAPI.genruntimeconfig.cache
 G:\Project_First\API\EcommerceAPI\obj\Release\net6.0\ref\EcommerceAPI.dll
+G:\Project_First\API\EcommerceAPI\obj\Release\net6.0\EcommerceAPI.Properties.Resources.resources
+G:\Project_First\API\EcommerceAPI\obj\Release\net6.0\EcommerceAPI.csproj.GenerateResource.cache

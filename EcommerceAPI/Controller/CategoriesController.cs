@@ -100,29 +100,54 @@ namespace EcommerceAPI.Controller
 
         [Route("CreateCategory")]
         [HttpPost]
-        public async Task<ActionResult<Category>> PostCategory(Category category)
+        public async Task<ActionResult<IEnumerable<Respon>>> PostCategory(CategoryReq categoryReq)
         {
-            _context.Categories.Add(category);
-            await _context.SaveChangesAsync();
+            try
+            {
+                var category = new Category
+                {
+                    Name = categoryReq.Name
+                };
+                _context.Categories.Add(category);
+                await _context.SaveChangesAsync();
+            }
+            catch
+            {
+                return Ok(new Respon { respone_code = 400, Status = "bad Request" });
+            }
+            
 
-            return CreatedAtAction("GetCategory", new { id = category.Id }, category);
+            return Ok(new Respon { respone_code = 200, Status = "Success" });
         }
 
-        //    // DELETE: api/Categories/5
-        //    [HttpDelete("{id}")]
-        //    public async Task<IActionResult> DeleteCategory(int id)
-        //    {
-        //        var category = await _context.Categories.FindAsync(id);
-        //        if (category == null)
-        //        {
-        //            return NotFound();
-        //        }
+        [Route("DeleteCategory")]
+        [HttpPost]
+        public async Task<IActionResult> DeleteCategory(int id)
+        {
+            Respon res = new();
+            try
+            {
+                var category = await _context.Categories.FindAsync(id);
+                if (category == null)
+                {
+                    res.respone_code = 404;
+                    res.Status = "Not Found";
+                    return Ok(res);
+                }
 
-        //        _context.Categories.Remove(category);
-        //        await _context.SaveChangesAsync();
-
-        //        return NoContent();
-        //    }
+                _context.Categories.Remove(category);
+                await _context.SaveChangesAsync();
+            }
+            catch
+            {
+                res.respone_code = 400;
+                res.Status = "bad Request";
+                return Ok(res);
+            }
+            res.respone_code = 200;
+            res.Status = "Success";
+            return Ok(res);
+        }
 
         private bool CategoryExists(int id)
         {

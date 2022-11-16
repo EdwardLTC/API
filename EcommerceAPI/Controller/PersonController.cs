@@ -51,14 +51,20 @@ namespace EcommerceAPI.Controller
 
         }
 
+        [Route("GetAllPersonByType")]
         [HttpGet]
-        [Route("GetAllPersonLoadMore")]
-        public async Task<ActionResult<IEnumerable<ResGetListPerson>>>  GetDataLoadMore(int currentIndex, int elementsNumber)
+        public async Task<ActionResult<IEnumerable<ResGetListPerson>>> GetPeopleType(int type)
         {
             ResGetListPerson _resGetListPerson = new();
-            var list = _context.People.Skip(currentIndex).Take(elementsNumber).ToListAsync();
+           
+            if (type >3 || type < 1)
+            {
+                _resGetListPerson._Respon = new Respon { respone_code = 400, Status = "Bad Reques" };
+                return Ok(_resGetListPerson);
+            }
+            List<Person> list = await _context.People.Where(x=>x.Role == type).ToListAsync();
             List<PersonRes> listRes = new();
-            foreach (Person person in await list)
+            foreach (Person person in list)
             {
                 PersonRes res = new()
                 {
@@ -73,12 +79,41 @@ namespace EcommerceAPI.Controller
                 listRes.Add(res);
 
             }
-
             _resGetListPerson._Respon = new Respon { respone_code = 200, Status = "Success" };
             _resGetListPerson._PersonRes = listRes;
 
             return Ok(_resGetListPerson);
+
         }
+
+        //[HttpGet]
+        //[Route("GetAllPersonLoadMore")]
+        //public async Task<ActionResult<IEnumerable<ResGetListPerson>>>  GetDataLoadMore(int currentIndex, int elementsNumber)
+        //{
+        //    ResGetListPerson _resGetListPerson = new();
+        //    var list = _context.People.Skip(currentIndex).Take(elementsNumber).ToListAsync();
+        //    List<PersonRes> listRes = new();
+        //    foreach (Person person in await list)
+        //    {
+        //        PersonRes res = new()
+        //        {
+        //            Id = person.Id,
+        //            Name = person.Name,
+        //            Address = person.Address,
+        //            Role = person.Role,
+        //            Mail = person.Mail,
+        //            ImgUrl = person.ImgUrl,
+        //            PhoneNum = person.PhoneNum
+        //        };
+        //        listRes.Add(res);
+
+        //    }
+
+        //    _resGetListPerson._Respon = new Respon { respone_code = 200, Status = "Success" };
+        //    _resGetListPerson._PersonRes = listRes;
+
+        //    return Ok(_resGetListPerson);
+        //}
 
         [Route("GetPersonWhere")]
         [HttpGet]
