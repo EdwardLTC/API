@@ -8,5 +8,6 @@
         public string? Des { get; set; }
         public string? Name { get; set; }
         public List<string> imgUrls { get; set; }
+        public List<ClothesPropertiesReq> ClothesProperties{ get; set; }
     }
 }

@@ -93,6 +93,11 @@ namespace EcommerceAPI.Controller
             {
                 _context.ImgUrls.Add(new ImgUrl {Idclothes = clothesReq.Id,ImgUrl1 = url});
             }
+            await _context.SaveChangesAsync();  
+            foreach (ClothesPropertiesReq pro in clothesReq.ClothesProperties)
+            {
+                _context.ClothesProperties.Add(new ClothesProperty { Idclothes = clothesReq.Id, Size = pro.Size, Quantily = pro.Quantily, Price = pro.Price });
+            }
             try
             {
                 await _context.SaveChangesAsync();
@@ -116,7 +121,7 @@ namespace EcommerceAPI.Controller
         [HttpPost]
         public async Task <ActionResult<IEnumerable<Respon>>> PostClothe(ClothesReq clothesReq)
         {
-            var ImgUrlstemp = new HashSet<ImgUrl>();
+           
 
             Clothe clothe = new Clothe
             {
@@ -133,6 +138,11 @@ namespace EcommerceAPI.Controller
                 foreach (String url in clothesReq.imgUrls)
                 {
                     _context.ImgUrls.Add(new ImgUrl { Idclothes = clothe.Id, ImgUrl1 = url });
+                }
+                await _context.SaveChangesAsync();
+                foreach (ClothesPropertiesReq pro in clothesReq.ClothesProperties)
+                {
+                    _context.ClothesProperties.Add(new ClothesProperty { Idclothes = clothe.Id, Size = pro.Size, Quantily = pro.Quantily, Price = pro.Price });
                 }
                 await _context.SaveChangesAsync();
 
@@ -176,6 +186,29 @@ namespace EcommerceAPI.Controller
             res.Status = "Success";
             return Ok(res);
         }
+        [Route("GetClothesProperties")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<ResGetClothes>>> GetClothePro(int id)
+        {
+            ResGetProperties res = new ResGetProperties();
+            var properties = await _context.ClothesProperties.Where(x => x.Idclothes == id).FirstOrDefaultAsync();
+            if (properties == null)
+            {
+                res._Respon = new Respon { respone_code = 404, Status = "Not Found" };
+                return Ok(res);
+            }
+
+            var propertiRes = new ClothesPropertiesRes
+            {
+                Quantily = properties.Quantily,
+                Size = properties.Size,
+                Price = properties.Price,
+            };
+            res._Respon = new Respon { respone_code = 200, Status = "Success" };
+            res._ClothesPropertiesRes = propertiRes;
+            return Ok(res);
+        }
+
 
         private bool ClotheExists(int id)
         {
