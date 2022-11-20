@@ -76,6 +76,33 @@ namespace EcommerceAPI.Controller
             return Ok(resGetClothes);
         }
 
+        [Route("GetClothesWhereCategory")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<ResGetClothes>>> GetClothesWhereCategory(int idCategoryReq)
+        {
+            ResGetClothes resGetClothes = new ResGetClothes();
+            Clothe clothe = await _context.Clothes.Where(x => x.IdCategory == idCategoryReq).FirstOrDefaultAsync();
+          
+            if (clothe == null)
+            {
+                resGetClothes._Respon = new Respon { respone_code = 404, Status = "Not Found" };
+                return Ok(resGetClothes);
+            }
+            List<string> listImgUrls = await _context.ImgUrls.Where(x => x.Idclothes == clothe.Id).Select(u => u.ImgUrl1).ToListAsync();
+            var clothesRes = new ClothesRes
+            {
+                Id = clothe.Id,
+                Name = clothe.Name,
+                Idseller = clothe.Idseller,
+                Des = clothe.Des,
+                IdCategory = clothe.IdCategory,
+                imgsUrl = listImgUrls
+            };
+            resGetClothes._Respon = new Respon { respone_code = 200, Status = "Success" };
+            resGetClothes._ClothesRes = clothesRes;
+            return Ok(resGetClothes);
+        }
+
         [Route("GetClothesFromSellerAndCategory")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ResGetClothes>>> GetClothesFromSellerAndCategory(int idSellerReq, int idCategoryReq)

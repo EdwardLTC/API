@@ -72,7 +72,7 @@ namespace EcommerceAPI.Controllers
 
         [Route("AddToFavorite")]
         [HttpPost]
-        public async Task<ActionResult<Favorite>> PostFavorite(FavoriteReq favoritereq)
+        public async Task<ActionResult<Respon>> PostFavorite(FavoriteReq favoritereq)
         {
             Respon res = new Respon();
             Favorite favorite = new Favorite { Idclothes = favoritereq.Idclothes, Iduser = favoritereq.Iduser };
