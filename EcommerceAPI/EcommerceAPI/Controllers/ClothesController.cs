@@ -76,6 +76,33 @@ namespace EcommerceAPI.Controller
             return Ok(resGetClothes);
         }
 
+        [Route("GetClothesFromSellerAndCategory")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<ResGetClothes>>> GetClothesFromSellerAndCategory(int idSellerReq, int idCategoryReq)
+        {
+            ResGetClothes resGetClothes = new ResGetClothes();
+            Clothe clothe = await _context.Clothes.Where(x => x.Idseller == idSellerReq && x.IdCategory == idCategoryReq).FirstOrDefaultAsync();
+            
+            if (clothe == null)
+            {
+                resGetClothes._Respon = new Respon { respone_code = 404, Status = "Not Found" };
+                return Ok(resGetClothes);
+            }
+            List<string> listImgUrls = await _context.ImgUrls.Where(x => x.Idclothes == clothe.Id).Select(u => u.ImgUrl1).ToListAsync();
+            var clothesRes = new ClothesRes
+            {
+                Id = clothe.Id,
+                Name = clothe.Name,
+                Idseller = clothe.Idseller,
+                Des = clothe.Des,
+                IdCategory = clothe.IdCategory,
+                imgsUrl = listImgUrls
+            };
+            resGetClothes._Respon = new Respon { respone_code = 200, Status = "Success" };
+            resGetClothes._ClothesRes = clothesRes;
+            return Ok(resGetClothes);
+        }
+
         [Route("UpdateClothes")]
         [HttpPost]
         public async Task<ActionResult<IEnumerable<Respon>>> PutClothe(ClothesReq clothesReq)
@@ -186,6 +213,7 @@ namespace EcommerceAPI.Controller
             res.Status = "Success";
             return Ok(res);
         }
+
         [Route("GetClothesProperties")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ResGetClothes>>> GetClothePro(int id)
@@ -209,7 +237,7 @@ namespace EcommerceAPI.Controller
             return Ok(res);
         }
 
-
+        
         private bool ClotheExists(int id)
         {
             return _context.Clothes.Any(e => e.Id == id);
