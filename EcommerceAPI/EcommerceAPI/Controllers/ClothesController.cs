@@ -78,56 +78,70 @@ namespace EcommerceAPI.Controller
 
         [Route("GetClothesWhereCategory")]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ResGetClothes>>> GetClothesWhereCategory(int idCategoryReq)
+        public async Task<ActionResult<IEnumerable<ResGetListClothes>>> GetClothesWhereCategory(int idCategoryReq)
         {
-            ResGetClothes resGetClothes = new ResGetClothes();
-            Clothe clothe = await _context.Clothes.Where(x => x.IdCategory == idCategoryReq).FirstOrDefaultAsync();
+            ResGetListClothes resGetListClothes = new ResGetListClothes();
+            List<ClothesRes> lisRes = new List<ClothesRes>();
+            List<Clothe> clotheList = await _context.Clothes.Where(x => x.IdCategory == idCategoryReq).ToListAsync();
           
-            if (clothe == null)
+            if (clotheList == null)
             {
-                resGetClothes._Respon = new Respon { respone_code = 404, Status = "Not Found" };
-                return Ok(resGetClothes);
+                resGetListClothes._Respon = new Respon { respone_code = 404, Status = "Not Found" };
+                return Ok(resGetListClothes);
             }
-            List<string> listImgUrls = await _context.ImgUrls.Where(x => x.Idclothes == clothe.Id).Select(u => u.ImgUrl1).ToListAsync();
-            var clothesRes = new ClothesRes
+           
+            foreach (Clothe clothe in clotheList)
             {
-                Id = clothe.Id,
-                Name = clothe.Name,
-                Idseller = clothe.Idseller,
-                Des = clothe.Des,
-                IdCategory = clothe.IdCategory,
-                imgsUrl = listImgUrls
-            };
-            resGetClothes._Respon = new Respon { respone_code = 200, Status = "Success" };
-            resGetClothes._ClothesRes = clothesRes;
-            return Ok(resGetClothes);
+                List<string> listImgUrls = await _context.ImgUrls.Where(x => x.Idclothes == clothe.Id).Select(u => u.ImgUrl1).ToListAsync();
+                var clothesRes = new ClothesRes
+                {
+                    Id = clothe.Id,
+                    Name = clothe.Name,
+                    Idseller = clothe.Idseller,
+                    Des = clothe.Des,
+                    IdCategory = clothe.IdCategory,
+                    imgsUrl = listImgUrls
+                };
+
+                lisRes.Add(clothesRes);
+            }
+
+            resGetListClothes._Respon = new Respon { respone_code = 200, Status = "Success" };
+            resGetListClothes._ClothesRes = lisRes; 
+            return Ok(resGetListClothes);
         }
 
         [Route("GetClothesFromSellerAndCategory")]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ResGetClothes>>> GetClothesFromSellerAndCategory(int idSellerReq, int idCategoryReq)
+        public async Task<ActionResult<IEnumerable<ResGetListClothes>>> GetClothesFromSellerAndCategory(int idSellerReq, int idCategoryReq)
         {
-            ResGetClothes resGetClothes = new ResGetClothes();
-            Clothe clothe = await _context.Clothes.Where(x => x.Idseller == idSellerReq && x.IdCategory == idCategoryReq).FirstOrDefaultAsync();
+            ResGetListClothes resGetListClothes = new ResGetListClothes();
+            List<ClothesRes> lisRes = new List<ClothesRes>();
+            List<Clothe> clotheList = await _context.Clothes.Where(x => x.Idseller == idSellerReq && x.IdCategory == idCategoryReq).ToListAsync();
             
-            if (clothe == null)
+            if (clotheList == null)
             {
-                resGetClothes._Respon = new Respon { respone_code = 404, Status = "Not Found" };
-                return Ok(resGetClothes);
+                resGetListClothes._Respon = new Respon { respone_code = 404, Status = "Not Found" };
+                return Ok(resGetListClothes);
             }
-            List<string> listImgUrls = await _context.ImgUrls.Where(x => x.Idclothes == clothe.Id).Select(u => u.ImgUrl1).ToListAsync();
-            var clothesRes = new ClothesRes
+            foreach(Clothe clothe in clotheList)
             {
-                Id = clothe.Id,
-                Name = clothe.Name,
-                Idseller = clothe.Idseller,
-                Des = clothe.Des,
-                IdCategory = clothe.IdCategory,
-                imgsUrl = listImgUrls
-            };
-            resGetClothes._Respon = new Respon { respone_code = 200, Status = "Success" };
-            resGetClothes._ClothesRes = clothesRes;
-            return Ok(resGetClothes);
+                List<string> listImgUrls = await _context.ImgUrls.Where(x => x.Idclothes == clothe.Id).Select(u => u.ImgUrl1).ToListAsync();
+                var clothesRes = new ClothesRes
+                {
+                    Id = clothe.Id,
+                    Name = clothe.Name,
+                    Idseller = clothe.Idseller,
+                    Des = clothe.Des,
+                    IdCategory = clothe.IdCategory,
+                    imgsUrl = listImgUrls
+                };
+                lisRes.Add(clothesRes); 
+            }
+           
+            resGetListClothes._Respon = new Respon { respone_code = 200, Status = "Success" };
+            resGetListClothes._ClothesRes = lisRes;
+            return Ok(resGetListClothes);
         }
 
         [Route("UpdateClothes")]
@@ -215,7 +229,6 @@ namespace EcommerceAPI.Controller
         [HttpPost]
         public async Task<IActionResult> DeleteClothe(int id)
         {
-           
             Respon res = new();
             try
             {
