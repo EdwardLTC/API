@@ -14,6 +14,7 @@ namespace EcommerceAPI.Models
         public int? Idseller { get; set; }
         public int? Ratio { get; set; }
 
+        public virtual Person? IdsellerNavigation { get; set; }
         public virtual ICollection<Bill> Bills { get; set; }
     }
 }

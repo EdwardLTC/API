@@ -7,20 +7,20 @@ namespace EcommerceAPI.Models
     {
         public Person()
         {
-            Bills = new HashSet<Bill>();
-            Clothes = new HashSet<Clothe>();
+            Favorites = new HashSet<Favorite>();
+            Vouchers = new HashSet<Voucher>();
         }
 
         public int Id { get; set; }
         public string? Name { get; set; }
         public string? Mail { get; set; }
-        public string? Psw { get; set; }
-        public string? PhoneNum { get; set; }
+        public string? Password { get; set; }
+        public string? PhoneNumber { get; set; }
         public int? Role { get; set; }
-        public string? ImgUrl { get; set; }
+        public string? Img { get; set; }
         public string? Address { get; set; }
 
-        public virtual ICollection<Bill> Bills { get; set; }
-        public virtual ICollection<Clothe> Clothes { get; set; }
+        public virtual ICollection<Favorite> Favorites { get; set; }
+        public virtual ICollection<Voucher> Vouchers { get; set; }
     }
 }

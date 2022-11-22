@@ -53,13 +53,7 @@ namespace EcommerceAPI.Models
 
                 entity.Property(e => e.Idvoucher).HasColumnName("IDvoucher");
 
-                entity.Property(e => e.Status).HasMaxLength(256);
-
-                entity.HasOne(d => d.IduserNavigation)
-                    .WithMany(p => p.Bills)
-                    .HasForeignKey(d => d.Iduser)
-                    .OnDelete(DeleteBehavior.Cascade)
-                    .HasConstraintName("FK_Bill_People");
+                entity.Property(e => e.Status).HasMaxLength(255);
 
                 entity.HasOne(d => d.IdvoucherNavigation)
                     .WithMany(p => p.Bills)
@@ -70,24 +64,22 @@ namespace EcommerceAPI.Models
 
             modelBuilder.Entity<BillDetail>(entity =>
             {
-                entity.HasKey(e => new { e.Idbill, e.Idclothes });
+                entity.HasKey(e => new { e.Idbill, e.IdclotheProperties });
 
                 entity.ToTable("BillDetail");
 
                 entity.Property(e => e.Idbill).HasColumnName("IDBill");
 
-                entity.Property(e => e.Idclothes).HasColumnName("IDClothes");
-
-                entity.Property(e => e.Price).HasColumnName("price");
+                entity.Property(e => e.IdclotheProperties).HasColumnName("IDClotheProperties");
 
                 entity.HasOne(d => d.IdbillNavigation)
                     .WithMany(p => p.BillDetails)
                     .HasForeignKey(d => d.Idbill)
                     .HasConstraintName("FK_BillDetail_Bill");
 
-                entity.HasOne(d => d.IdclothesNavigation)
+                entity.HasOne(d => d.IdclothePropertiesNavigation)
                     .WithMany(p => p.BillDetails)
-                    .HasForeignKey(d => d.Idclothes)
+                    .HasForeignKey(d => d.IdclotheProperties)
                     .HasConstraintName("FK_BillDetail_Clothes_Properties");
             });
 
@@ -105,7 +97,7 @@ namespace EcommerceAPI.Models
                 entity.Property(e => e.Id).HasColumnName("id");
 
                 entity.Property(e => e.Des)
-                    .HasMaxLength(256)
+                    .HasMaxLength(255)
                     .HasColumnName("des");
 
                 entity.Property(e => e.IdCategory).HasColumnName("idCategory");
@@ -119,12 +111,6 @@ namespace EcommerceAPI.Models
                     .HasForeignKey(d => d.IdCategory)
                     .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_Clothes_Category");
-
-                entity.HasOne(d => d.IdsellerNavigation)
-                    .WithMany(p => p.Clothes)
-                    .HasForeignKey(d => d.Idseller)
-                    .OnDelete(DeleteBehavior.Cascade)
-                    .HasConstraintName("FK_Clothes_People");
             });
 
             modelBuilder.Entity<ClothesProperty>(entity =>
@@ -137,7 +123,14 @@ namespace EcommerceAPI.Models
 
                 entity.Property(e => e.Size)
                     .HasMaxLength(50)
-                    .HasColumnName("size");
+                    .HasColumnName("size")
+                    .IsFixedLength();
+
+                entity.HasOne(d => d.IdclothesNavigation)
+                    .WithMany(p => p.ClothesProperties)
+                    .HasForeignKey(d => d.Idclothes)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("FK_Clothes_Properties_Clothes");
             });
 
             modelBuilder.Entity<Favorite>(entity =>
@@ -153,6 +146,12 @@ namespace EcommerceAPI.Models
                     .HasForeignKey(d => d.Idclothes)
                     .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FK_Favorites_Clothes");
+
+                entity.HasOne(d => d.IduserNavigation)
+                    .WithMany(p => p.Favorites)
+                    .HasForeignKey(d => d.Iduser)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("FK_Favorites_People");
             });
 
             modelBuilder.Entity<ImgUrl>(entity =>
@@ -162,7 +161,7 @@ namespace EcommerceAPI.Models
                 entity.Property(e => e.Idclothes).HasColumnName("IDClothes");
 
                 entity.Property(e => e.ImgUrl1)
-                    .HasMaxLength(256)
+                    .HasMaxLength(255)
                     .HasColumnName("ImgUrl");
 
                 entity.HasOne(d => d.IdclothesNavigation)
@@ -174,19 +173,31 @@ namespace EcommerceAPI.Models
 
             modelBuilder.Entity<Person>(entity =>
             {
-                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.Id).HasColumnName("ID");
 
-                entity.Property(e => e.Address).HasMaxLength(50);
+                entity.Property(e => e.Address)
+                    .HasMaxLength(50)
+                    .IsFixedLength();
 
-                entity.Property(e => e.ImgUrl).HasMaxLength(256);
+                entity.Property(e => e.Img)
+                    .HasMaxLength(255)
+                    .HasColumnName("img");
 
-                entity.Property(e => e.Mail).HasMaxLength(50);
+                entity.Property(e => e.Mail)
+                    .HasMaxLength(50)
+                    .IsFixedLength();
 
-                entity.Property(e => e.Name).HasMaxLength(50);
+                entity.Property(e => e.Name)
+                    .HasMaxLength(50)
+                    .IsFixedLength();
 
-                entity.Property(e => e.PhoneNum).HasMaxLength(50);
+                entity.Property(e => e.Password)
+                    .HasMaxLength(255)
+                    .IsFixedLength();
 
-                entity.Property(e => e.Psw).HasMaxLength(256);
+                entity.Property(e => e.PhoneNumber)
+                    .HasMaxLength(20)
+                    .IsFixedLength();
             });
 
             modelBuilder.Entity<Voucher>(entity =>
@@ -198,6 +209,12 @@ namespace EcommerceAPI.Models
                 entity.Property(e => e.Idseller).HasColumnName("IDSeller");
 
                 entity.Property(e => e.Ratio).HasColumnName("ratio");
+
+                entity.HasOne(d => d.IdsellerNavigation)
+                    .WithMany(p => p.Vouchers)
+                    .HasForeignKey(d => d.Idseller)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("FK_Voucher_People");
             });
 
             OnModelCreatingPartial(modelBuilder);

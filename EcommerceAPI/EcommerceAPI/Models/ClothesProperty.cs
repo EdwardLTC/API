@@ -16,6 +16,7 @@ namespace EcommerceAPI.Models
         public int? Quantily { get; set; }
         public double? Price { get; set; }
 
+        public virtual Clothe? IdclothesNavigation { get; set; }
         public virtual ICollection<BillDetail> BillDetails { get; set; }
     }
 }

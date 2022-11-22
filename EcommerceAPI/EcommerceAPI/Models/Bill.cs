@@ -17,7 +17,6 @@ namespace EcommerceAPI.Models
         public DateTime? DateReceived { get; set; }
         public string? Status { get; set; }
 
-        public virtual Person? IduserNavigation { get; set; }
         public virtual Voucher? IdvoucherNavigation { get; set; }
         public virtual ICollection<BillDetail> BillDetails { get; set; }
     }

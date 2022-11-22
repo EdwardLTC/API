@@ -10,5 +10,6 @@ namespace EcommerceAPI.Models
         public int? Iduser { get; set; }
 
         public virtual Clothe? IdclothesNavigation { get; set; }
+        public virtual Person? IduserNavigation { get; set; }
     }
 }

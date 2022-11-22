@@ -38,8 +38,8 @@ namespace EcommerceAPI.Controller
                     Address = person.Address,
                     Role = person.Role,
                     Mail = person.Mail,
-                    ImgUrl = person.ImgUrl,
-                    PhoneNum = person.PhoneNum
+                    ImgUrl = person.Img,
+                    PhoneNum = person.PhoneNumber
                 };
                 listRes.Add(res);
 
@@ -73,8 +73,8 @@ namespace EcommerceAPI.Controller
                     Address = person.Address,
                     Role = person.Role,
                     Mail = person.Mail,
-                    ImgUrl = person.ImgUrl,
-                    PhoneNum = person.PhoneNum
+                    ImgUrl = person.Img,
+                    PhoneNum = person.PhoneNumber
                 };
                 listRes.Add(res);
 
@@ -133,8 +133,8 @@ namespace EcommerceAPI.Controller
                 Address = person.Address,
                 Role = person.Role,
                 Mail = person.Mail,
-                ImgUrl = person.ImgUrl,
-                PhoneNum = person.PhoneNum
+                ImgUrl = person.Img,
+                PhoneNum = person.PhoneNumber
             };
 
             _resGetPerson._Respon = new Respon { respone_code = 200, Status = "Success" };
@@ -155,9 +155,9 @@ namespace EcommerceAPI.Controller
                     Address = personReq.Address,
                     Role = personReq.Role,
                     Mail = personReq.Mail,
-                    ImgUrl = personReq.ImgUrl,
-                    PhoneNum = personReq.PhoneNum,
-                    Psw = personReq.Psw
+                    Img = personReq.ImgUrl,
+                    PhoneNumber = personReq.PhoneNum,
+                    Password = personReq.Psw
                 };
                 _context.People.Add(person);
                 await _context.SaveChangesAsync();
@@ -181,8 +181,8 @@ namespace EcommerceAPI.Controller
                 Address = personReq.Address,
                 Role = personReq.Role,
                 Mail = personReq.Mail,
-                ImgUrl = personReq.ImgUrl,
-                PhoneNum = personReq.PhoneNum
+                Img = personReq.ImgUrl,
+                PhoneNumber = personReq.PhoneNum
             };
             _context.Entry(person).State = EntityState.Modified;
             try
@@ -240,15 +240,15 @@ namespace EcommerceAPI.Controller
         {
             ResGetPerson _resGetPerson = new();
 
-            var person = await _context.People.Where(x => x.Mail == _email && x.Psw == _psw)
+            var person = await _context.People.Where(x => x.Mail == _email && x.Password == _psw)
                 .Select(x => new PersonRes
                 {
                     Id = x.Id,
                     Name = x.Name,
                     Mail = x.Mail,
-                    PhoneNum = x.PhoneNum,
+                    PhoneNum = x.PhoneNumber,
                     Role = x.Role,
-                    ImgUrl = x.ImgUrl,
+                    ImgUrl = x.Img,
                     Address = x.Address
                 }).FirstOrDefaultAsync();
 

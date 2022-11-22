@@ -7,6 +7,7 @@ namespace EcommerceAPI.Models
     {
         public Clothe()
         {
+            ClothesProperties = new HashSet<ClothesProperty>();
             Favorites = new HashSet<Favorite>();
             ImgUrls = new HashSet<ImgUrl>();
         }
@@ -18,7 +19,7 @@ namespace EcommerceAPI.Models
         public string? Name { get; set; }
 
         public virtual Category? IdCategoryNavigation { get; set; }
-        public virtual Person? IdsellerNavigation { get; set; }
+        public virtual ICollection<ClothesProperty> ClothesProperties { get; set; }
         public virtual ICollection<Favorite> Favorites { get; set; }
         public virtual ICollection<ImgUrl> ImgUrls { get; set; }
     }

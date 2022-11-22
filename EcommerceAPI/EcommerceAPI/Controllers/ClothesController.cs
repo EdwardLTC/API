@@ -9,6 +9,7 @@ using EcommerceAPI.Models;
 using EcommerceAPI.Models.Models_Respon;
 using EcommerceAPI.Models.Models_Respone;
 using EcommerceAPI.Models.Models_Request;
+using EcommerceAPI.Models.Models_Responsive;
 
 namespace EcommerceAPI.Controller
 {
@@ -144,6 +145,39 @@ namespace EcommerceAPI.Controller
             return Ok(resGetListClothes);
         }
 
+        [Route("GetClothesFrom")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<ResGetListClothes>>> GetClothesFrom(int idSellerReq)
+        {
+            ResGetListClothes resGetListClothes = new ResGetListClothes();
+            List<ClothesRes> lisRes = new List<ClothesRes>();
+            List<Clothe> clotheList = await _context.Clothes.Where(x => x.Idseller == idSellerReq).ToListAsync();
+
+            if (clotheList == null)
+            {
+                resGetListClothes._Respon = new Respon { respone_code = 404, Status = "Not Found" };
+                return Ok(resGetListClothes);
+            }
+            foreach (Clothe clothe in clotheList)
+            {
+                List<string> listImgUrls = await _context.ImgUrls.Where(x => x.Idclothes == clothe.Id).Select(u => u.ImgUrl1).ToListAsync();
+                var clothesRes = new ClothesRes
+                {
+                    Id = clothe.Id,
+                    Name = clothe.Name,
+                    Idseller = clothe.Idseller,
+                    Des = clothe.Des,
+                    IdCategory = clothe.IdCategory,
+                    imgsUrl = listImgUrls
+                };
+                lisRes.Add(clothesRes);
+            }
+
+            resGetListClothes._Respon = new Respon { respone_code = 200, Status = "Success" };
+            resGetListClothes._ClothesRes = lisRes;
+            return Ok(resGetListClothes);
+        }
+
         [Route("UpdateClothes")]
         [HttpPost]
         public async Task<ActionResult<IEnumerable<Respon>>> PutClothe(ClothesReq clothesReq)
@@ -256,28 +290,55 @@ namespace EcommerceAPI.Controller
 
         [Route("GetClothesProperties")]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ResGetClothes>>> GetClothePro(int id)
+        public async Task<ActionResult<IEnumerable<ResGetListProperties>>> GetClothePro(int idClothes)
         {
-            ResGetProperties res = new ResGetProperties();
-            var properties = await _context.ClothesProperties.Where(x => x.Idclothes == id).FirstOrDefaultAsync();
+            ResGetListProperties res = new ResGetListProperties();
+            if (!ClotheExists(idClothes))
+            {
+                res._Respon = new Respon { respone_code = 404, Status = "Not Found" };
+                return Ok(res);
+            }
+            List<ClothesPropertiesRes> listRes = new List<ClothesPropertiesRes>();
+            List<ClothesProperty> properties = await _context.ClothesProperties.Where(x => x.Idclothes == idClothes).ToListAsync();
             if (properties == null)
             {
                 res._Respon = new Respon { respone_code = 404, Status = "Not Found" };
                 return Ok(res);
             }
-
-            var propertiRes = new ClothesPropertiesRes
+            foreach (var property in properties)
             {
-                Quantily = properties.Quantily,
-                Size = properties.Size,
-                Price = properties.Price,
-            };
+                var propertiRes = new ClothesPropertiesRes
+                {
+      
+                    Quantily = property.Quantily,
+                    Size = property.Size,
+                    Price = property.Price,
+                };
+                listRes.Add(propertiRes);
+            }
+           
             res._Respon = new Respon { respone_code = 200, Status = "Success" };
-            res._ClothesPropertiesRes = propertiRes;
+            res._ClothesPropertiesRes = listRes;
             return Ok(res);
         }
 
-        
+        [Route("GetClothesQuantily")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<ResClothesQuantily>>> GetClothesQuantily(int idClothes)
+        {
+            ResClothesQuantily res = new ResClothesQuantily();
+            if (!ClotheExists(idClothes))
+            {
+                res._Respon = new Respon { respone_code = 404, Status = "Not Found" };
+                return Ok(res);
+            }
+            var total = _context.ClothesProperties.Where(o=>o.Idclothes == idClothes).Select(o => o.Quantily).Sum();
+            res._Respon = new Respon { respone_code = 200, Status = "Success" };
+            res.Quantily = (int)total;
+            return Ok(res);
+        }
+
+
         private bool ClotheExists(int id)
         {
             return _context.Clothes.Any(e => e.Id == id);
