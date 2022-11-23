@@ -6,10 +6,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EcommerceAPI.Models;
+using EcommerceAPI.Models.Models_Request;
+using EcommerceAPI.Models.Models_Respone;
+using System.Drawing;
 
 namespace EcommerceAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/")]
     [ApiController]
     public class BillsController : ControllerBase
     {
@@ -20,72 +23,77 @@ namespace EcommerceAPI.Controllers
             _context = context;
         }
 
-        // GET: api/Bills
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Bill>>> GetBills()
-        {
-            return await _context.Bills.ToListAsync();
-        }
-
-        // GET: api/Bills/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Bill>> GetBill(int id)
-        {
-            var bill = await _context.Bills.FindAsync(id);
-
-            if (bill == null)
-            {
-                return NotFound();
-            }
-
-            return bill;
-        }
-
-        // PUT: api/Bills/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutBill(int id, Bill bill)
-        {
-            if (id != bill.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(bill).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!BillExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/Bills
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Route("CreateBill")]
         [HttpPost]
-        public async Task<ActionResult<Bill>> PostBill(Bill bill)
+        public async Task<ActionResult<IEnumerable<Respon>>> CreateBill(BillReq billReq)
         {
+
+            Bill bill = new Bill
+            {
+                Iduser = billReq.Iduser,
+                Idvoucher = billReq.Idvoucher,
+                DateCreate = billReq.DateCreate,
+                DateReceived = billReq.DateReceived,
+                Status = billReq.Status,
+            };
             _context.Bills.Add(bill);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetBill", new { id = bill.Id }, bill);
-        }
+            foreach (var billDetailReq in billReq.ListBillDetailReq)
+            {
+                if (!ClotheExists(billDetailReq.Idclothes))
+                {
+                    return Ok(new Respon { respone_code = 404, Status = "not Found" });
+                }
+                var quantity = _context.ClothesProperties
+                .Where(o => o.Size == billDetailReq.Size && o.Idclothes == billDetailReq.Idclothes)
+                .Select(o => o.Quantily).FirstOrDefault();
+                if (billDetailReq.Quantily > quantity)
+                {
+                    return Ok(new Respon { respone_code = 400, Status = "Bad Req" });
+                }
+            }
+            foreach (var billDetailReq in billReq.ListBillDetailReq)
+            {
+                ClothesProperty clothesProperty = _context.ClothesProperties.Where(o => o.Idclothes == billDetailReq.Idclothes).SingleOrDefault();
+                int temp = (int)clothesProperty.Quantily;
+                clothesProperty.Quantily = temp - billDetailReq.Quantily;
+                _context.Entry(clothesProperty).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                BillDetail billDetail = new BillDetail
+                {
+                    Idbill = bill.Id,
+                    IdclotheProperties = clothesProperty.Id,
+                    Quantity = billDetailReq.Quantily,
+                    Price = billDetailReq.Quantily * clothesProperty.Price
+                };
+                _context.BillDetails.Add(billDetail);
+                await _context.SaveChangesAsync();
+            }
 
+            return Ok(new Respon { respone_code = 200, Status = "success" });
+
+
+        }
         private bool BillExists(int id)
         {
             return _context.Bills.Any(e => e.Id == id);
         }
+
+        private bool ClotheExists(int id)
+        {
+            return _context.Clothes.Any(e => e.Id == id);
+        }
+
+        //public int QuantityInStock(int idClothes, string size)
+        //{
+        //    var quantity = _context.ClothesProperties
+        //        .Where(o => o.Size == size && o.Idclothes == idClothes)
+        //        .Select(o => o.Quantily).FirstOrDefault();
+
+        //    return (int)quantity;
+        //}
+
+
     }
 }

@@ -33,13 +33,15 @@ namespace EcommerceAPI.Controller
             List<ClothesRes> res = new List<ClothesRes>();
             foreach(Clothe clothes in list)
             {
-                ClothesRes respon =  new ClothesRes
+                var total = _context.ClothesProperties.Where(o => o.Idclothes == clothes.Id).Select(o => o.Quantily).Sum();
+                ClothesRes respon = new ClothesRes
                 {
                     Id = clothes.Id,
                     Name = clothes.Name,
                     Idseller = clothes.Idseller,
                     Des = clothes.Des,
                     IdCategory = clothes.IdCategory,
+                    quantily = (int)total
                 };
                 List<string> listImgUrls = await _context.ImgUrls.Where(x => x.Idclothes == clothes.Id).Select(u => u.ImgUrl1).ToListAsync();
                 respon.imgsUrl = listImgUrls;
@@ -62,7 +64,7 @@ namespace EcommerceAPI.Controller
                 resGetClothes._Respon = new Respon { respone_code = 404, Status = "Not Found" };
                 return Ok(resGetClothes) ;
             }
-
+            var total = _context.ClothesProperties.Where(o => o.Idclothes == id).Select(o => o.Quantily).Sum();
             var clothesRes = new ClothesRes
             {
                 Id = clothe.Id,
@@ -70,7 +72,8 @@ namespace EcommerceAPI.Controller
                 Idseller = clothe.Idseller,
                 Des = clothe.Des,
                 IdCategory = clothe.IdCategory,
-                imgsUrl = listImgUrls
+                imgsUrl = listImgUrls,
+                quantily = (int)total
             };
             resGetClothes._Respon = new Respon { respone_code = 200, Status = "Success" };
             resGetClothes._ClothesRes = clothesRes;
@@ -93,7 +96,9 @@ namespace EcommerceAPI.Controller
            
             foreach (Clothe clothe in clotheList)
             {
+
                 List<string> listImgUrls = await _context.ImgUrls.Where(x => x.Idclothes == clothe.Id).Select(u => u.ImgUrl1).ToListAsync();
+                var total = _context.ClothesProperties.Where(o => o.Idclothes == clothe.Id).Select(o => o.Quantily).Sum();
                 var clothesRes = new ClothesRes
                 {
                     Id = clothe.Id,
@@ -101,7 +106,9 @@ namespace EcommerceAPI.Controller
                     Idseller = clothe.Idseller,
                     Des = clothe.Des,
                     IdCategory = clothe.IdCategory,
-                    imgsUrl = listImgUrls
+                    imgsUrl = listImgUrls,
+                    quantily = (int)total
+                    
                 };
 
                 lisRes.Add(clothesRes);
@@ -128,6 +135,7 @@ namespace EcommerceAPI.Controller
             foreach(Clothe clothe in clotheList)
             {
                 List<string> listImgUrls = await _context.ImgUrls.Where(x => x.Idclothes == clothe.Id).Select(u => u.ImgUrl1).ToListAsync();
+                var total = _context.ClothesProperties.Where(o => o.Idclothes == clothe.Id).Select(o => o.Quantily).Sum();
                 var clothesRes = new ClothesRes
                 {
                     Id = clothe.Id,
@@ -135,7 +143,8 @@ namespace EcommerceAPI.Controller
                     Idseller = clothe.Idseller,
                     Des = clothe.Des,
                     IdCategory = clothe.IdCategory,
-                    imgsUrl = listImgUrls
+                    imgsUrl = listImgUrls,
+                    quantily = (int)total
                 };
                 lisRes.Add(clothesRes); 
             }
@@ -161,6 +170,7 @@ namespace EcommerceAPI.Controller
             foreach (Clothe clothe in clotheList)
             {
                 List<string> listImgUrls = await _context.ImgUrls.Where(x => x.Idclothes == clothe.Id).Select(u => u.ImgUrl1).ToListAsync();
+                var total = _context.ClothesProperties.Where(o => o.Idclothes == clothe.Id).Select(o => o.Quantily).Sum();
                 var clothesRes = new ClothesRes
                 {
                     Id = clothe.Id,
@@ -168,7 +178,8 @@ namespace EcommerceAPI.Controller
                     Idseller = clothe.Idseller,
                     Des = clothe.Des,
                     IdCategory = clothe.IdCategory,
-                    imgsUrl = listImgUrls
+                    imgsUrl = listImgUrls,
+                    quantily = (int)total
                 };
                 lisRes.Add(clothesRes);
             }
@@ -198,7 +209,7 @@ namespace EcommerceAPI.Controller
             await _context.SaveChangesAsync();  
             foreach (ClothesPropertiesReq pro in clothesReq.ClothesProperties)
             {
-                _context.ClothesProperties.Add(new ClothesProperty { Idclothes = clothesReq.Id, Size = pro.Size, Quantily = pro.Quantily, Price = pro.Price });
+                _context.ClothesProperties.Add(new ClothesProperty { Idclothes = clothesReq.Id, Size = pro.Size, Quantily = pro.Quantily, Price = Convert.ToDouble( pro.Price) });
             }
             try
             {
@@ -244,7 +255,7 @@ namespace EcommerceAPI.Controller
                 await _context.SaveChangesAsync();
                 foreach (ClothesPropertiesReq pro in clothesReq.ClothesProperties)
                 {
-                    _context.ClothesProperties.Add(new ClothesProperty { Idclothes = clothe.Id, Size = pro.Size, Quantily = pro.Quantily, Price = pro.Price });
+                    _context.ClothesProperties.Add(new ClothesProperty { Idclothes = clothe.Id, Size = pro.Size, Quantily = pro.Quantily, Price = Convert.ToDouble(pro.Price) });
                 }
                 await _context.SaveChangesAsync();
 
@@ -312,7 +323,7 @@ namespace EcommerceAPI.Controller
       
                     Quantily = property.Quantily,
                     Size = property.Size,
-                    Price = property.Price,
+                    Price = property.Price.ToString(),
                 };
                 listRes.Add(propertiRes);
             }

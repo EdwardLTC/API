@@ -3,8 +3,7 @@
     public class BillDetailReq
     {
         public int Idclothes { get; set; }
-        public int? Quantity { get; set; }
-        public double? Price { get; set; }
-    
+        public string Size { get; set; }
+        public int Quantily { get; set; }
     }
 }

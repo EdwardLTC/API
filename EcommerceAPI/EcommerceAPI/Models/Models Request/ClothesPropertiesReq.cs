@@ -5,6 +5,6 @@
         public int IdClothes { get; set; }
         public string? Size { get; set; }
         public int? Quantily { get; set; }
-        public double? Price { get; set; }
+        public string Price { get; set; }
     }
 }

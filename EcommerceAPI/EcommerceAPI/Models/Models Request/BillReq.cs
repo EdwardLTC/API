@@ -2,7 +2,6 @@
 {
     public class BillReq
     {
-        public int Id { get; set; }
         public int? Iduser { get; set; }
         public int? Idvoucher { get; set; }
         public DateTime? DateCreate { get; set; }

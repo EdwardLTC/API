@@ -2,8 +2,10 @@
 {
     public class ClothesPropertiesRes
     {
+
+        public int Id { get; set; }
         public string? Size { get; set; }
         public int? Quantily { get; set; }
-        public double? Price { get; set; }
+        public string? Price { get; set; }
     }
 }
