@@ -27,18 +27,6 @@ namespace EcommerceAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<IEnumerable<Respon>>> CreateBill(BillReq billReq)
         {
-
-            Bill bill = new Bill
-            {
-                Iduser = billReq.Iduser,
-                Idvoucher = billReq.Idvoucher,
-                DateCreate = billReq.DateCreate,
-                DateReceived = billReq.DateReceived,
-                Status = billReq.Status,
-            };
-            _context.Bills.Add(bill);
-            await _context.SaveChangesAsync();
-
             foreach (var billDetailReq in billReq.ListBillDetailReq)
             {
                 if (!ClotheExists(billDetailReq.Idclothes))
@@ -53,6 +41,16 @@ namespace EcommerceAPI.Controllers
                     return Ok(new Respon { respone_code = 400, Status = "Bad Req" });
                 }
             }
+            Bill bill = new Bill
+            {
+                Iduser = billReq.Iduser,
+                Idvoucher = billReq.Idvoucher,
+                DateCreate = billReq.DateCreate,
+                DateReceived = billReq.DateReceived,
+                Status = billReq.Status,
+            };
+            _context.Bills.Add(bill);
+            await _context.SaveChangesAsync();
             foreach (var billDetailReq in billReq.ListBillDetailReq)
             {
                 ClothesProperty clothesProperty = _context.ClothesProperties.Where(o => o.Idclothes == billDetailReq.Idclothes).SingleOrDefault();
@@ -84,16 +82,6 @@ namespace EcommerceAPI.Controllers
         {
             return _context.Clothes.Any(e => e.Id == id);
         }
-
-        //public int QuantityInStock(int idClothes, string size)
-        //{
-        //    var quantity = _context.ClothesProperties
-        //        .Where(o => o.Size == size && o.Idclothes == idClothes)
-        //        .Select(o => o.Quantily).FirstOrDefault();
-
-        //    return (int)quantity;
-        //}
-
 
     }
 }
