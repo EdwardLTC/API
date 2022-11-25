@@ -18,6 +18,38 @@ namespace EcommerceAPI.Controllers
             _context = context;
         }
 
+        [Route("UpdateStatusBill")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Respon>>> UpdateStatusBill(string status,int idBill)
+        {
+            if (!BillExists(idBill)){
+                return NotFound();
+            }
+            Bill bill = await _context.Bills.Where(o => o.Id == idBill).SingleOrDefaultAsync();
+            bill.Status = status;
+            _context.SaveChanges();
+            return Ok();
+        }
+
+        [Route("MarkBillComplete")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Respon>>> MarkBillComplete(int idBill)
+        {   
+            if (!BillExists(idBill))
+            {
+                return NotFound();
+            }
+            Bill bill = await _context.Bills.Where(o => o.Id == idBill).SingleOrDefaultAsync();
+            if (bill.DateReceived != null)
+            {
+                return BadRequest();
+            }
+            bill.DateReceived = DateTime.UtcNow.Date;
+            bill.Status = "Bill Completed";
+            _context.SaveChanges();
+            return Ok();
+        }
+
         [Route("CreateBill")]
         [HttpPost]
         public async Task<ActionResult<IEnumerable<ResBill>>> CreateBill(BillReq billReq)
