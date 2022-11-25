@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using EcommerceAPI.Models;
+﻿using EcommerceAPI.Models;
+using EcommerceAPI.Models.Models_Request;
 using EcommerceAPI.Models.Models_Respon;
 using EcommerceAPI.Models.Models_Respone;
-using EcommerceAPI.Models.Models_Request;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EcommerceAPI.Controller
 {
@@ -80,7 +75,7 @@ namespace EcommerceAPI.Controller
             _context.Entry(_category).State = EntityState.Modified;
             try
             {
-               
+
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
@@ -115,7 +110,7 @@ namespace EcommerceAPI.Controller
             {
                 return Ok(new Respon { respone_code = 400, Status = "bad Request" });
             }
-            
+
 
             return Ok(new Respon { respone_code = 200, Status = "Success" });
         }

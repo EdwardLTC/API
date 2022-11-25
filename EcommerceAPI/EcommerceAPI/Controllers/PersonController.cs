@@ -1,14 +1,9 @@
 ﻿using EcommerceAPI.Models;
 using EcommerceAPI.Models.Models_Request;
 using EcommerceAPI.Models.Models_Respone;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 using System.Data;
-using System.Net;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace EcommerceAPI.Controller
 {
@@ -56,13 +51,13 @@ namespace EcommerceAPI.Controller
         public async Task<ActionResult<IEnumerable<ResGetListPerson>>> GetPeopleType(int type)
         {
             ResGetListPerson _resGetListPerson = new();
-           
-            if (type >3 || type < 1)
+
+            if (type > 3 || type < 1)
             {
                 _resGetListPerson._Respon = new Respon { respone_code = 400, Status = "Bad Reques" };
                 return Ok(_resGetListPerson);
             }
-            List<Person> list = await _context.People.Where(x=>x.Role == type).ToListAsync();
+            List<Person> list = await _context.People.Where(x => x.Role == type).ToListAsync();
             List<PersonRes> listRes = new();
             foreach (Person person in list)
             {
@@ -119,7 +114,7 @@ namespace EcommerceAPI.Controller
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ResGetPerson>>> GetPeople(int Id)
         {
-            ResGetPerson _resGetPerson = new(); 
+            ResGetPerson _resGetPerson = new();
             var person = await _context.People.FindAsync(Id);
             if (person == null)
             {
@@ -166,7 +161,7 @@ namespace EcommerceAPI.Controller
             {
                 return Ok(new Respon { respone_code = 400, Status = "bad Request" });
             }
-          
+
             return Ok(new Respon { respone_code = 200, Status = "Success" });
         }
 
@@ -187,7 +182,7 @@ namespace EcommerceAPI.Controller
             _context.Entry(person).State = EntityState.Modified;
             try
             {
-           
+
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
@@ -236,7 +231,7 @@ namespace EcommerceAPI.Controller
 
         [Route("Login")]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ResGetPerson>>> Login(String _email,String _psw)
+        public async Task<ActionResult<IEnumerable<ResGetPerson>>> Login(String _email, String _psw)
         {
             ResGetPerson _resGetPerson = new();
 
@@ -252,9 +247,9 @@ namespace EcommerceAPI.Controller
                     Address = x.Address
                 }).FirstOrDefaultAsync();
 
-            if(person == null)
+            if (person == null)
             {
-                _resGetPerson._Respon = new Respon { respone_code= 404, Status= "Does not exist" };
+                _resGetPerson._Respon = new Respon { respone_code = 404, Status = "Does not exist" };
             }
             else
             {
@@ -265,7 +260,7 @@ namespace EcommerceAPI.Controller
             return Ok(_resGetPerson);
         }
 
-        private bool PersonExists(int id)   
+        private bool PersonExists(int id)
         {
             return _context.People.Any(e => e.Id == id);
         }

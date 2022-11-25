@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using EcommerceAPI.Models;
+﻿using EcommerceAPI.Models;
+using EcommerceAPI.Models.Models_Request;
 using EcommerceAPI.Models.Models_Respon;
 using EcommerceAPI.Models.Models_Respone;
 using EcommerceAPI.Models.Models_Responsive;
-using EcommerceAPI.Models.Models_Request;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EcommerceAPI.Controllers
 {
@@ -50,15 +45,15 @@ namespace EcommerceAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ResGetListVoucher>>> GetAllVoucherOf(int idSeller)
         {
-            
+
             ResGetListVoucher resGetListVoucher = new ResGetListVoucher();
             if (!PersonExists(idSeller))
             {
                 resGetListVoucher._Respon = new Respon { respone_code = 404, Status = "Seller Not Exists" };
                 return Ok(resGetListVoucher);
             }
-  
-            List<Voucher> vouchers = await _context.Vouchers.Where(x => x.Idseller == idSeller).ToListAsync();    
+
+            List<Voucher> vouchers = await _context.Vouchers.Where(x => x.Idseller == idSeller).ToListAsync();
             List<VoucherRes> vouchersRes = new List<VoucherRes>();
             foreach (Voucher voucher in vouchers)
             {
@@ -81,7 +76,7 @@ namespace EcommerceAPI.Controllers
         {
             ResGetVoucher resGetVoucher = new ResGetVoucher();
             var voucher = await _context.Vouchers.FindAsync(id);
-            
+
             if (voucher == null)
             {
                 resGetVoucher._Respon = new Respon { respone_code = 404, Status = "Not Found" };
@@ -95,7 +90,7 @@ namespace EcommerceAPI.Controllers
                 Idseller = voucher.Idseller
             };
 
-            resGetVoucher._VoucherRes= voucherRes;
+            resGetVoucher._VoucherRes = voucherRes;
             resGetVoucher._Respon = new Respon { respone_code = 200, Status = "Success" };
             return Ok(resGetVoucher);
         }

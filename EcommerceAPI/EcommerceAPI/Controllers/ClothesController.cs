@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using EcommerceAPI.Models;
+﻿using EcommerceAPI.Models;
+using EcommerceAPI.Models.Models_Request;
 using EcommerceAPI.Models.Models_Respon;
 using EcommerceAPI.Models.Models_Respone;
-using EcommerceAPI.Models.Models_Request;
 using EcommerceAPI.Models.Models_Responsive;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EcommerceAPI.Controller
 {
@@ -28,10 +23,10 @@ namespace EcommerceAPI.Controller
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ResGetListClothes>>> GetClothes()
         {
-            ResGetListClothes resGetListClothes = new ResGetListClothes();  
+            ResGetListClothes resGetListClothes = new ResGetListClothes();
             List<Clothe> list = await _context.Clothes.ToListAsync();
             List<ClothesRes> res = new List<ClothesRes>();
-            foreach(Clothe clothes in list)
+            foreach (Clothe clothes in list)
             {
                 var total = _context.ClothesProperties.Where(o => o.Idclothes == clothes.Id).Select(o => o.Quantily).Sum();
                 ClothesRes respon = new ClothesRes
@@ -47,7 +42,7 @@ namespace EcommerceAPI.Controller
                 respon.imgsUrl = listImgUrls;
                 res.Add(respon);
             }
-            resGetListClothes._Respon = new Respon {respone_code= 200, Status= "Success" };
+            resGetListClothes._Respon = new Respon { respone_code = 200, Status = "Success" };
             resGetListClothes._ClothesRes = res;
             return Ok(resGetListClothes);
         }
@@ -62,7 +57,7 @@ namespace EcommerceAPI.Controller
             if (clothe == null)
             {
                 resGetClothes._Respon = new Respon { respone_code = 404, Status = "Not Found" };
-                return Ok(resGetClothes) ;
+                return Ok(resGetClothes);
             }
             var total = _context.ClothesProperties.Where(o => o.Idclothes == id).Select(o => o.Quantily).Sum();
             var clothesRes = new ClothesRes
@@ -87,13 +82,13 @@ namespace EcommerceAPI.Controller
             ResGetListClothes resGetListClothes = new ResGetListClothes();
             List<ClothesRes> lisRes = new List<ClothesRes>();
             List<Clothe> clotheList = await _context.Clothes.Where(x => x.IdCategory == idCategoryReq).ToListAsync();
-          
+
             if (clotheList == null)
             {
                 resGetListClothes._Respon = new Respon { respone_code = 404, Status = "Not Found" };
                 return Ok(resGetListClothes);
             }
-           
+
             foreach (Clothe clothe in clotheList)
             {
 
@@ -108,14 +103,14 @@ namespace EcommerceAPI.Controller
                     IdCategory = clothe.IdCategory,
                     imgsUrl = listImgUrls,
                     quantily = (int)total
-                    
+
                 };
 
                 lisRes.Add(clothesRes);
             }
 
             resGetListClothes._Respon = new Respon { respone_code = 200, Status = "Success" };
-            resGetListClothes._ClothesRes = lisRes; 
+            resGetListClothes._ClothesRes = lisRes;
             return Ok(resGetListClothes);
         }
 
@@ -126,13 +121,13 @@ namespace EcommerceAPI.Controller
             ResGetListClothes resGetListClothes = new ResGetListClothes();
             List<ClothesRes> lisRes = new List<ClothesRes>();
             List<Clothe> clotheList = await _context.Clothes.Where(x => x.Idseller == idSellerReq && x.IdCategory == idCategoryReq).ToListAsync();
-            
+
             if (clotheList == null)
             {
                 resGetListClothes._Respon = new Respon { respone_code = 404, Status = "Not Found" };
                 return Ok(resGetListClothes);
             }
-            foreach(Clothe clothe in clotheList)
+            foreach (Clothe clothe in clotheList)
             {
                 List<string> listImgUrls = await _context.ImgUrls.Where(x => x.Idclothes == clothe.Id).Select(u => u.ImgUrl1).ToListAsync();
                 var total = _context.ClothesProperties.Where(o => o.Idclothes == clothe.Id).Select(o => o.Quantily).Sum();
@@ -146,9 +141,9 @@ namespace EcommerceAPI.Controller
                     imgsUrl = listImgUrls,
                     quantily = (int)total
                 };
-                lisRes.Add(clothesRes); 
+                lisRes.Add(clothesRes);
             }
-           
+
             resGetListClothes._Respon = new Respon { respone_code = 200, Status = "Success" };
             resGetListClothes._ClothesRes = lisRes;
             return Ok(resGetListClothes);
@@ -202,14 +197,14 @@ namespace EcommerceAPI.Controller
                 Name = clothesReq.Name
             };
             _context.Entry(clothe).State = EntityState.Modified;
-            foreach(String url in clothesReq.imgUrls)
+            foreach (String url in clothesReq.imgUrls)
             {
-                _context.ImgUrls.Add(new ImgUrl {Idclothes = clothesReq.Id,ImgUrl1 = url});
+                _context.ImgUrls.Add(new ImgUrl { Idclothes = clothesReq.Id, ImgUrl1 = url });
             }
-            await _context.SaveChangesAsync();  
+            await _context.SaveChangesAsync();
             foreach (ClothesPropertiesReq pro in clothesReq.ClothesProperties)
             {
-                _context.ClothesProperties.Add(new ClothesProperty { Idclothes = clothesReq.Id, Size = pro.Size, Quantily = pro.Quantily, Price = Convert.ToDouble( pro.Price) });
+                _context.ClothesProperties.Add(new ClothesProperty { Idclothes = clothesReq.Id, Size = pro.Size, Quantily = pro.Quantily, Price = Convert.ToDouble(pro.Price) });
             }
             try
             {
@@ -232,9 +227,9 @@ namespace EcommerceAPI.Controller
 
         [Route("CreateClothes")]
         [HttpPost]
-        public async Task <ActionResult<IEnumerable<Respon>>> PostClothe(ClothesReq clothesReq)
+        public async Task<ActionResult<IEnumerable<Respon>>> PostClothe(ClothesReq clothesReq)
         {
-           
+
 
             Clothe clothe = new Clothe
             {
@@ -320,14 +315,14 @@ namespace EcommerceAPI.Controller
             {
                 var propertiRes = new ClothesPropertiesRes
                 {
-      
+
                     Quantily = property.Quantily,
                     Size = property.Size,
                     Price = property.Price.ToString(),
                 };
                 listRes.Add(propertiRes);
             }
-           
+
             res._Respon = new Respon { respone_code = 200, Status = "Success" };
             res._ClothesPropertiesRes = listRes;
             return Ok(res);
@@ -343,7 +338,7 @@ namespace EcommerceAPI.Controller
                 res._Respon = new Respon { respone_code = 404, Status = "Not Found" };
                 return Ok(res);
             }
-            var total = _context.ClothesProperties.Where(o=>o.Idclothes == idClothes).Select(o => o.Quantily).Sum();
+            var total = _context.ClothesProperties.Where(o => o.Idclothes == idClothes).Select(o => o.Quantily).Sum();
             res._Respon = new Respon { respone_code = 200, Status = "Success" };
             res.Quantily = (int)total;
             return Ok(res);

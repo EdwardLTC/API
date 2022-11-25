@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using EcommerceAPI.Models;
+﻿using EcommerceAPI.Models;
+using EcommerceAPI.Models.Models_Request;
 using EcommerceAPI.Models.Models_Respon;
 using EcommerceAPI.Models.Models_Respone;
-using EcommerceAPI.Models.Models_Request;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EcommerceAPI.Controllers
 {
@@ -33,7 +28,7 @@ namespace EcommerceAPI.Controllers
                 resGetListClothes._Respon = new Respon { respone_code = 404, Status = "Not found" };
                 return Ok(resGetListClothes);
             }
-            
+
             List<ClothesRes> res = new List<ClothesRes>();
             var query = from favorite in _context.Favorites
                         where favorite.Iduser == userID
@@ -89,7 +84,7 @@ namespace EcommerceAPI.Controllers
                 res.Status = "Clothes not found";
                 return Ok(res);
             }
-          
+
             try
             {
                 _context.Favorites.Add(favorite);
@@ -114,7 +109,7 @@ namespace EcommerceAPI.Controllers
         public async Task<IActionResult> DeleteFavorite(FavoriteReq favoriteReq)
         {
             Respon res = new Respon();
-            var favorite = await _context.Favorites.Where(x=> x.Iduser == favoriteReq.Iduser && x.Idclothes == favoriteReq.Idclothes).FirstOrDefaultAsync();
+            var favorite = await _context.Favorites.Where(x => x.Iduser == favoriteReq.Iduser && x.Idclothes == favoriteReq.Idclothes).FirstOrDefaultAsync();
             if (favorite == null)
             {
                 res.respone_code = 400;

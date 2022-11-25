@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace EcommerceAPI.Models
+﻿namespace EcommerceAPI.Models
 {
     public partial class ClothesProperty
     {

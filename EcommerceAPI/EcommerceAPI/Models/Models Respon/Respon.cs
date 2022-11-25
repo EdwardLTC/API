@@ -1,7 +1,4 @@
-﻿using EcommerceAPI.Models;
-using Microsoft.EntityFrameworkCore;
-
-namespace EcommerceAPI.Models.Models_Respone
+﻿namespace EcommerceAPI.Models.Models_Respone
 {
     public class Respon
     {

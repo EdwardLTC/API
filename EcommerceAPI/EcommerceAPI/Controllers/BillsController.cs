@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using EcommerceAPI.Models;
+using EcommerceAPI.Models.Models_Request;
+using EcommerceAPI.Models.Models_Respon;
+using EcommerceAPI.Models.Models_Respone;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using EcommerceAPI.Models;
-using EcommerceAPI.Models.Models_Request;
-using EcommerceAPI.Models.Models_Respone;
-using System.Drawing;
 
 namespace EcommerceAPI.Controllers
 {
@@ -25,35 +20,38 @@ namespace EcommerceAPI.Controllers
 
         [Route("CreateBill")]
         [HttpPost]
-        public async Task<ActionResult<IEnumerable<Respon>>> CreateBill(BillReq billReq)
+        public async Task<ActionResult<IEnumerable<ResBill>>> CreateBill(BillReq billReq)
         {
+            ResBill res = new ResBill();
             foreach (var billDetailReq in billReq.ListBillDetailReq)
             {
                 if (!ClotheExists(billDetailReq.Idclothes))
                 {
-                    return Ok(new Respon { respone_code = 404, Status = "not Found" });
+                    res._Respon = new Respon { respone_code = 404, Status = $"not Found {billDetailReq.Idclothes}" };
+                    return Ok(res);
                 }
                 var quantity = _context.ClothesProperties
                 .Where(o => o.Size == billDetailReq.Size && o.Idclothes == billDetailReq.Idclothes)
                 .Select(o => o.Quantily).FirstOrDefault();
                 if (billDetailReq.Quantily > quantity)
                 {
-                    return Ok(new Respon { respone_code = 400, Status = "Bad Req" });
+                    res._Respon = new Respon { respone_code = 400, Status = "Bad Req" };
+                    return Ok(res);
                 }
             }
-            Bill bill = new Bill
+            var percentDiscount = _context.Vouchers.Where(o => o.Id == billReq.Idvoucher).Select(o => o.Ratio).SingleOrDefault();
+            Bill bill = new()
             {
                 Iduser = billReq.Iduser,
-                Idvoucher = billReq.Idvoucher,
-                DateCreate = billReq.DateCreate,
-                DateReceived = billReq.DateReceived,
+                Idvoucher = percentDiscount,
+                DateCreate = DateTime.UtcNow.Date,
                 Status = billReq.Status,
             };
             _context.Bills.Add(bill);
             await _context.SaveChangesAsync();
             foreach (var billDetailReq in billReq.ListBillDetailReq)
             {
-                ClothesProperty clothesProperty = _context.ClothesProperties.Where(o => o.Idclothes == billDetailReq.Idclothes).SingleOrDefault();
+                ClothesProperty clothesProperty = await _context.ClothesProperties.Where(o => o.Idclothes == billDetailReq.Idclothes).SingleOrDefaultAsync();
                 int temp = (int)clothesProperty.Quantily;
                 clothesProperty.Quantily = temp - billDetailReq.Quantily;
                 _context.Entry(clothesProperty).State = EntityState.Modified;
@@ -69,9 +67,21 @@ namespace EcommerceAPI.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            return Ok(new Respon { respone_code = 200, Status = "success" });
+            var totolPrice = _context.BillDetails.Where(o => o.Idbill == bill.Id).Sum(i => i.Price);
+            double test = 0;
+            try
+            {
+                test = double.Parse(percentDiscount.ToString());
+            }
+            catch
+            {
+                test = 0;
+            }
 
-
+            double s = double.Parse(totolPrice.ToString()) - ((double.Parse(totolPrice.ToString()) * test));
+            res._Respon = new Respon { respone_code = 200, Status = "success" };
+            res._DateCreate = DateTime.Now.ToString();
+            return Ok(res);
         }
         private bool BillExists(int id)
         {

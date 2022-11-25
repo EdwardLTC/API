@@ -8,6 +8,6 @@
         public string? Des { get; set; }
         public string? Name { get; set; }
         public List<String> imgsUrl { get; set; }
-        public int quantily {get; set; }
+        public int quantily { get; set; }
     }
 }
