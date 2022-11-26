@@ -6,6 +6,6 @@ namespace EcommerceAPI.Models.Models_Responsive
     public class ResGetListBill
     {
         public Respon _Respon { get; set; }
-        public List<BillRes> _BillList { get; set; }
+        public List<BillRes> _BillRes { get; set; }
     }
 }

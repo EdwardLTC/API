@@ -26,12 +26,12 @@ namespace EcommerceAPI.Controllers
         {
             if (!BillExists(idBill))
             {
-                return NotFound();
+                return Ok (new Respon { respone_code = 404, Status = "not found"});
             }
             Bill bill = await _context.Bills.Where(o => o.Id == idBill).SingleOrDefaultAsync();
             bill.Status = status;
             _context.SaveChanges();
-            return Ok();
+            return Ok(new Respon { respone_code = 200, Status = "Success" });
         }
 
         [Route("GetBillOfUser")]
@@ -63,13 +63,52 @@ namespace EcommerceAPI.Controllers
                     Id = seller.idBill,
                     Iduser = seller.idUser,
                     Idseller = seller.idSeller,
-                    DateCreate = seller.dateCreate,
+                    DateCreate = seller.dateCreate.ToString(),
                     Status = seller.status
                 };
                 resList.Add(nes);
             }
             resGetListBill._Respon = new Respon { Status = "Success", respone_code = 200 };
-            resGetListBill._BillList = resList;
+            resGetListBill._BillRes = resList;
+            return Ok(resGetListBill);
+        }
+
+        [Route("GetBillOfSeller")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<ResGetListBill>>> GetALlBillOfSeller(int idSeller)
+        {
+            ResGetListBill resGetListBill = new ResGetListBill();
+            if (!PersonExists(idSeller))
+            {
+                resGetListBill._Respon = new Respon { Status = "not found", respone_code = 404 };
+                return Ok(resGetListBill);
+            }
+
+            var query = from seller in _context.Bills
+                        where seller.Idseller == idSeller
+                        select new
+                        {
+                            idBill = seller.Id,
+                            idSeller = seller.Idseller,
+                            idUser = seller.Iduser,
+                            dateCreate = seller.DateCreate,
+                            status = seller.Status
+                        };
+            List<BillRes> resList = new List<BillRes>();
+            foreach (var seller in query)
+            {
+                BillRes nes = new BillRes
+                {
+                    Id = seller.idBill,
+                    Iduser = seller.idUser,
+                    Idseller = seller.idSeller,
+                    DateCreate =  seller.dateCreate.ToString(),
+                    Status = seller.status
+                };
+                resList.Add(nes);
+            }
+            resGetListBill._Respon = new Respon { Status = "Success", respone_code = 200 };
+            resGetListBill._BillRes = resList;
             return Ok(resGetListBill);
         }
 

@@ -6,7 +6,7 @@
         public int? Iduser { get; set; }
         public int? Idseller { get; set; }
         public int? Idvoucher { get; set; }
-        public DateTime? DateCreate { get; set; }
+        public string? DateCreate { get; set; }
         public string? Status { get; set; }
     }
 }
