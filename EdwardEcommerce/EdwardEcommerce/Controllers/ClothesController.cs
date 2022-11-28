@@ -197,11 +197,28 @@ namespace EcommerceAPI.Controller
                 Name = clothesReq.Name
             };
             _context.Entry(clothe).State = EntityState.Modified;
+
+            var query = (from img in _context.ImgUrls
+                         where img.Idclothes == clothe.Id
+                         select img).ToListAsync();
+            foreach (var img in await query)
+            {
+                _context.ImgUrls.Remove(img);
+                _context.SaveChanges();
+            }
             foreach (String url in clothesReq.imgUrls)
             {
                 _context.ImgUrls.Add(new ImgUrl { Idclothes = clothesReq.Id, ImgUrl1 = url });
             }
             await _context.SaveChangesAsync();
+            var query1 = (from pro in _context.ClothesProperties
+                          where pro.Idclothes == clothe.Id
+                          select pro).ToListAsync();
+            foreach (var pro in await query1)
+            {
+                _context.ClothesProperties.Remove(pro);
+                _context.SaveChanges();
+            }
             foreach (ClothesPropertiesReq pro in clothesReq.ClothesProperties)
             {
                 _context.ClothesProperties.Add(new ClothesProperty { Idclothes = clothesReq.Id, Size = pro.Size, Quantily = pro.Quantily, Price = Convert.ToDouble(pro.Price) });
@@ -231,7 +248,7 @@ namespace EcommerceAPI.Controller
         {
 
 
-            Clothe clothe = new Clothe
+            Clothe clothe = new()
             {
                 Idseller = clothesReq.Idseller,
                 Name = clothesReq.Name,

@@ -4,6 +4,7 @@ using EcommerceAPI.Models.Models_Respone;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
+using Microsoft.Data.SqlClient;
 
 namespace EcommerceAPI.Controller
 {
@@ -256,7 +257,7 @@ namespace EcommerceAPI.Controller
                 _resGetPerson._Respon = new Respon { respone_code = 200, Status = "Successs" };
                 _resGetPerson._PersonRes = person;
             }
-
+            
             return Ok(_resGetPerson);
         }
 

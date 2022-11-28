@@ -4,7 +4,9 @@ using EcommerceAPI.Models.Models_Respon;
 using EcommerceAPI.Models.Models_Respone;
 using EcommerceAPI.Models.Models_Responsive;
 using EdwardEcommerce.Models;
+using EdwardEcommerce.Models.Models_Responsive;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace EcommerceAPI.Controllers
@@ -118,17 +120,17 @@ namespace EcommerceAPI.Controllers
         {
             if (!BillExists(idBill))
             {
-                return NotFound();
+                return Ok(new Respon { respone_code=404,Status ="not found"});
             }
             Bill bill = await _context.Bills.Where(o => o.Id == idBill).SingleOrDefaultAsync();
-            if (bill.DateReceived != null)
-            {
-                return BadRequest();
-            }
+            //if (bill.DateReceived != null)
+            //{
+            //    return Ok(new Respon { respone_code = 400, Status = "not found" });
+            //}
             bill.DateReceived = DateTime.UtcNow.Date;
             bill.Status = "Bill Completed";
             _context.SaveChanges();
-            return Ok();
+            return Ok(new Respon { respone_code = 200, Status = "Success" });
         }
 
         [Route("CreateBill")]
@@ -156,6 +158,7 @@ namespace EcommerceAPI.Controllers
             Bill bill = new()
             {
                 Iduser = billReq.Iduser,
+                Idseller = billReq.Idseller,
                 Idvoucher = percentDiscount,
                 DateCreate = DateTime.UtcNow.Date,
                 Status = billReq.Status,
@@ -191,11 +194,163 @@ namespace EcommerceAPI.Controllers
                 test = 0;
             }
 
-            double s = double.Parse(totolPrice.ToString()) - ((double.Parse(totolPrice.ToString()) * test));
+            double s = double.Parse(totolPrice.ToString()) - ((double.Parse(totolPrice.ToString()) * test) / 100 );
             res._Respon = new Respon { respone_code = 200, Status = "success" };
             res._DateCreate = DateTime.Now.ToString();
             return Ok(res);
         }
+
+        [Route("GetClothesFromFromBill")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<ResGetListClothes>>> GetClothesFromFromBill(int billId)
+        {
+            ResGetListClothes resGetListClothes = new ResGetListClothes();
+            if (!BillExists(billId))
+            {
+                resGetListClothes._Respon = new Respon { Status = "not found", respone_code = 404 };
+                return Ok(resGetListClothes);
+            }
+
+
+            var listIdClothesPropeties =_context.BillDetails.Where(o => o.Idbill == billId).Select(o=>o.IdclotheProperties);
+            
+            List<int> listIdClothes = new List<int>();
+            foreach (var item in listIdClothesPropeties)
+            {
+                var result = _context.ClothesProperties.Where(o => o.Id == item).Select(o => o.Idclothes);
+                foreach (var id in result)
+                {
+                    listIdClothes.Add(id.Value);
+                }
+            }
+
+            List<ClothesRes> listRes = new List<ClothesRes>();
+            foreach (var item in listIdClothes)
+            {
+                var clothe = await _context.Clothes.FindAsync(item);
+                List<string> listImgUrls = await _context.ImgUrls.Where(x => x.Idclothes == item).Select(u => u.ImgUrl1).ToListAsync();
+                var total = _context.ClothesProperties.Where(o => o.Idclothes ==item).Select(o => o.Quantily).Sum();
+                var clothesRes = new ClothesRes
+                {
+                    Id = clothe.Id,
+                    Name = clothe.Name,
+                    Idseller = clothe.Idseller,
+                    Des = clothe.Des,
+                    IdCategory = clothe.IdCategory,
+                    imgsUrl = listImgUrls,
+                    quantily = (int)total
+                };
+                listRes.Add(clothesRes);
+
+            }
+           
+            resGetListClothes._Respon = new Respon { Status = "Success", respone_code = 200 };
+            resGetListClothes._ClothesRes = listRes;
+            return Ok(resGetListClothes);
+        }
+
+        [Route("GetBillWhereCompleted")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<ResGetListBill>>> GetBillWhereCompleted()
+        {
+            ResGetListBill resGetListBill = new ResGetListBill();
+            var query = from bill in _context.Bills
+                        where bill.Status == "Bill Completed"
+                        select new
+                        {
+                            idBill = bill.Id,
+                            idSeller = bill.Idseller,
+                            idVoucher = bill.Idvoucher,
+                            idUser = bill.Iduser,
+                            dateCreate = bill.DateCreate,
+                            status = bill.Status
+                        };
+            List<BillRes> resList = new List<BillRes>();
+            foreach (var seller in query)
+            {
+                BillRes nes = new BillRes
+                {
+                    Id = seller.idBill,
+                    Iduser = seller.idUser,
+                    Idseller = seller.idSeller,
+                    Idvoucher = seller.idVoucher,
+                    DateCreate = seller.dateCreate.ToString(),
+                    Status = seller.status
+                };
+                resList.Add(nes);
+            }
+            resGetListBill._Respon = new Respon { Status = "Success", respone_code = 200 };
+            resGetListBill._BillRes = resList;
+            return Ok(resGetListBill);
+        }
+
+        [Route("GetBillWhereNotCompleted")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<ResGetListBill>>> GetBillWhereNotCompleted()
+        {
+            ResGetListBill resGetListBill = new ResGetListBill();
+            var query = from bill in _context.Bills
+                        where bill.Status != "Bill Completed"
+                        select new
+                        {
+                            idBill = bill.Id,
+                            idSeller = bill.Idseller,
+                            idVoucher = bill.Idvoucher,
+                            idUser = bill.Iduser,
+                            dateCreate = bill.DateCreate,
+                            status = bill.Status
+                        };
+            List<BillRes> resList = new List<BillRes>();
+            foreach (var seller in query)
+            {
+                BillRes nes = new BillRes
+                {
+                    Id = seller.idBill,
+                    Iduser = seller.idUser,
+                    Idseller = seller.idSeller,
+                    Idvoucher = seller.idVoucher,
+                    DateCreate = seller.dateCreate.ToString(),
+                    Status = seller.status
+                };
+                resList.Add(nes);
+            }
+            resGetListBill._Respon = new Respon { Status = "Success", respone_code = 200 };
+            resGetListBill._BillRes = resList;
+            return Ok(resGetListBill);
+        }
+
+        [Route("GetBillPayment")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<ResGetBillPayment>>> GetBillPayment(int idBill)
+        {
+           
+            ResGetBillPayment res = new ResGetBillPayment();
+            if (!BillExists(idBill))
+            {
+                res._Respon = new Respon { respone_code = 404, Status = "Not Found" };
+            }
+            Bill billReq = await _context.Bills.Where(o=>o.Id == idBill).FirstOrDefaultAsync();
+            var percentDiscount = _context.Vouchers.Where(o => o.Id == billReq.Idvoucher).Select(o => o.Ratio).SingleOrDefault();
+            var totolPrice = _context.BillDetails.Where(o => o.Idbill == idBill).Sum(i => i.Price);
+            double test = 0;
+            try
+            {
+                test = double.Parse(percentDiscount.ToString());
+            }
+            catch
+            {
+                test = 0;
+            }
+            
+            double s = double.Parse(totolPrice.ToString()) - ((double.Parse(totolPrice.ToString()) * test / 100));
+            Console.WriteLine(double.Parse(totolPrice.ToString()));
+            Console.WriteLine(((double.Parse(totolPrice.ToString()) * test)));
+            Console.Write(totolPrice);
+            res._Respon = new Respon { Status = "success", respone_code = 200 };
+            res._Payment = s.ToString();
+            return Ok(res);
+        }
+
         private bool BillExists(int id)
         {
             return _context.Bills.Any(e => e.Id == id);
