@@ -9,5 +9,7 @@
         public string? Name { get; set; }
         public List<String> imgsUrl { get; set; }
         public int quantily { get; set; }
+        public string maxPrice { get; set; }
+        public string CategoryName { get; set; }
     }
 }

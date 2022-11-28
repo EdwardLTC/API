@@ -46,20 +46,22 @@ namespace EcommerceAPI.Controllers
                 resGetListBill._Respon = new Respon { Status = "not found", respone_code = 404 };
                 return Ok(resGetListBill);
             }
-
-            var query = from seller in _context.Bills
-                        where seller.Iduser == idUser
+            
+            var query = from sl in _context.Bills
+                        where sl.Iduser == idUser
                         select new
                         {
-                            idBill = seller.Id,
-                            idSeller = seller.Idseller,
-                            idUser = seller.Iduser,
-                            dateCreate = seller.DateCreate,
-                            status =seller.Status
+                            idBill = sl.Id,
+                            idSeller = sl.Idseller,
+                            idUser = sl.Iduser,
+                            dateCreate = sl.DateCreate,
+                            status =sl.Status
                         };
             List<BillRes> resList = new List<BillRes>();
             foreach (var seller in query)
             {
+                string sellerName = from sl in _context.People
+                                    where sl.Id == seller.
                 BillRes nes = new BillRes
                 {
                     Id = seller.idBill,
