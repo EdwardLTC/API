@@ -60,15 +60,17 @@ namespace EcommerceAPI.Controllers
             List<BillRes> resList = new List<BillRes>();
             foreach (var seller in query)
             {
-                string sellerName = from sl in _context.People
-                                    where sl.Id == seller.
+                string sellerName =_context.People.Where(o=>o.Id == seller.idSeller).Select(o=>o.Name).FirstOrDefault();
+                string userAddress = _context.People.Where(o=>o.Id==seller.idUser).Select(o=>o.Address).FirstOrDefault();
                 BillRes nes = new BillRes
                 {
                     Id = seller.idBill,
                     Iduser = seller.idUser,
                     Idseller = seller.idSeller,
                     DateCreate = seller.dateCreate.ToString(),
-                    Status = seller.status
+                    Status = seller.status,
+                    SellerName = sellerName,
+                    UserAddress = userAddress,
                 };
                 resList.Add(nes);
             }
@@ -101,13 +103,17 @@ namespace EcommerceAPI.Controllers
             List<BillRes> resList = new List<BillRes>();
             foreach (var seller in query)
             {
+                string sellerName = _context.People.Where(o => o.Id == seller.idSeller).Select(o => o.Name).FirstOrDefault();
+                string userAddress = _context.People.Where(o => o.Id == seller.idUser).Select(o => o.Address).FirstOrDefault();
                 BillRes nes = new BillRes
                 {
                     Id = seller.idBill,
                     Iduser = seller.idUser,
                     Idseller = seller.idSeller,
                     DateCreate =  seller.dateCreate.ToString(),
-                    Status = seller.status
+                    Status = seller.status,
+                    SellerName = sellerName,
+                    UserAddress = userAddress,
                 };
                 resList.Add(nes);
             }
@@ -270,6 +276,8 @@ namespace EcommerceAPI.Controllers
             List<BillRes> resList = new List<BillRes>();
             foreach (var seller in query)
             {
+                string sellerName = _context.People.Where(o => o.Id == seller.idSeller).Select(o => o.Name).FirstOrDefault();
+                string userAddress = _context.People.Where(o => o.Id == seller.idUser).Select(o => o.Address).FirstOrDefault();
                 BillRes nes = new BillRes
                 {
                     Id = seller.idBill,
@@ -277,7 +285,9 @@ namespace EcommerceAPI.Controllers
                     Idseller = seller.idSeller,
                     Idvoucher = seller.idVoucher,
                     DateCreate = seller.dateCreate.ToString(),
-                    Status = seller.status
+                    Status = seller.status,
+                    SellerName = sellerName,
+                    UserAddress = userAddress,
                 };
                 resList.Add(nes);
             }
@@ -305,6 +315,8 @@ namespace EcommerceAPI.Controllers
             List<BillRes> resList = new List<BillRes>();
             foreach (var seller in query)
             {
+                string sellerName = _context.People.Where(o => o.Id == seller.idSeller).Select(o => o.Name).FirstOrDefault();
+                string userAddress = _context.People.Where(o => o.Id == seller.idUser).Select(o => o.Address).FirstOrDefault();
                 BillRes nes = new BillRes
                 {
                     Id = seller.idBill,
@@ -312,7 +324,9 @@ namespace EcommerceAPI.Controllers
                     Idseller = seller.idSeller,
                     Idvoucher = seller.idVoucher,
                     DateCreate = seller.dateCreate.ToString(),
-                    Status = seller.status
+                    Status = seller.status,
+                    SellerName = sellerName,
+                    UserAddress = userAddress,
                 };
                 resList.Add(nes);
             }

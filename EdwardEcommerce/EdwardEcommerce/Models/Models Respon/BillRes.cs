@@ -8,5 +8,7 @@
         public int? Idvoucher { get; set; }
         public string? DateCreate { get; set; }
         public string? Status { get; set; }
+        public string? SellerName { get; set; }
+        public string? UserAddress { get; set; }
     }
 }
