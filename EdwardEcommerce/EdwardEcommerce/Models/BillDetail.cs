@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using EdwardEcommerce.Models;
-using Microsoft.EntityFrameworkCore;
-
-namespace EdwardEcommerce.Models
+﻿namespace EdwardEcommerce.Models
 {
     public partial class BillDetail
     {

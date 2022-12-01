@@ -1,6 +1,6 @@
 ﻿namespace EcommerceAPI.Models.Models_Respon
 {
-    public class BillRes
+    public class ResBill
     {
         public int Id { get; set; }
         public int? Iduser { get; set; }

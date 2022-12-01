@@ -1,7 +1,7 @@
-﻿using EdwardEcommerce.Models;
-using EcommerceAPI.Models.Models_Request;
+﻿using EcommerceAPI.Models.Models_Request;
 using EcommerceAPI.Models.Models_Respon;
 using EcommerceAPI.Models.Models_Respone;
+using EdwardEcommerce.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -47,7 +47,7 @@ namespace EcommerceAPI.Controllers
                                imgUrl = url.ImgUrl1
                            };
                 List<string> urls = await _context.ImgUrls.Where(x => x.Idclothes == favorite.idClosthes).Select(u => u.ImgUrl1).ToListAsync();
-
+                var maxPrices = _context.ClothesProperties.Where(o => o.Idclothes == favorite.idClosthes).Max(o => o.Price);
                 var clothesRes = new ClothesRes
                 {
                     Id = clothe.Id,
@@ -55,7 +55,8 @@ namespace EcommerceAPI.Controllers
                     Idseller = clothe.Idseller,
                     Des = clothe.Des,
                     IdCategory = clothe.IdCategory,
-                    imgsUrl = urls
+                    imgsUrl = urls,
+                    maxPrice = maxPrices.ToString()
                 };
                 res.Add(clothesRes);
             }

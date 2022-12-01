@@ -2,7 +2,7 @@
 
 namespace EcommerceAPI.Models.Models_Respon
 {
-    public class ResBill
+    public class BillRes
     {
         public Respon _Respon { get; set; }
         public string _TotolPrice { get; set; }

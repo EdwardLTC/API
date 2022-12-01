@@ -1,10 +1,10 @@
-﻿using EdwardEcommerce.Models;
-using EcommerceAPI.Models.Models_Request;
+﻿using EcommerceAPI.Models.Models_Request;
 using EcommerceAPI.Models.Models_Respone;
+using EdwardEcommerce.Models;
+using EdwardEcommerce.Models.Models_Responsive;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
-using Microsoft.Data.SqlClient;
 
 namespace EcommerceAPI.Controller
 {
@@ -257,8 +257,32 @@ namespace EcommerceAPI.Controller
                 _resGetPerson._Respon = new Respon { respone_code = 200, Status = "Successs" };
                 _resGetPerson._PersonRes = person;
             }
-            
+
             return Ok(_resGetPerson);
+        }
+
+        [Route("SellerIncome")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<ResSellerIncome>>> SellerIncome(int idSeller)
+        {
+            ResSellerIncome res = new ResSellerIncome();
+            if (!PersonExists(idSeller))
+            {
+                res._Respon = new Respon { Status = "Not Found", respone_code = 404 };
+                return BadRequest(res);
+            }
+            var result = from bill in _context.Bills
+                         from billdetail in _context.BillDetails
+                         where bill.Id == billdetail.Idbill && bill.Idseller == idSeller
+                         select new
+                         {
+                             price = billdetail.Price,
+                         };
+            var sum = result.Select(c => c.price).Sum();
+
+            res._Respon = new Respon { respone_code = 200, Status = "Success" };
+            res._Income = sum.ToString();
+            return Ok(res);
         }
 
         private bool PersonExists(int id)

@@ -6,7 +6,6 @@ using EcommerceAPI.Models.Models_Responsive;
 using EdwardEcommerce.Models;
 using EdwardEcommerce.Models.Models_Responsive;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace EcommerceAPI.Controllers
@@ -28,7 +27,7 @@ namespace EcommerceAPI.Controllers
         {
             if (!BillExists(idBill))
             {
-                return Ok (new Respon { respone_code = 404, Status = "not found"});
+                return Ok(new Respon { respone_code = 404, Status = "not found" });
             }
             Bill bill = await _context.Bills.Where(o => o.Id == idBill).SingleOrDefaultAsync();
             bill.Status = status;
@@ -46,7 +45,7 @@ namespace EcommerceAPI.Controllers
                 resGetListBill._Respon = new Respon { Status = "not found", respone_code = 404 };
                 return Ok(resGetListBill);
             }
-            
+
             var query = from sl in _context.Bills
                         where sl.Iduser == idUser
                         select new
@@ -55,14 +54,14 @@ namespace EcommerceAPI.Controllers
                             idSeller = sl.Idseller,
                             idUser = sl.Iduser,
                             dateCreate = sl.DateCreate,
-                            status =sl.Status
+                            status = sl.Status
                         };
-            List<BillRes> resList = new List<BillRes>();
+            List<ResBill> resList = new List<ResBill>();
             foreach (var seller in query)
             {
-                string sellerName =_context.People.Where(o=>o.Id == seller.idSeller).Select(o=>o.Name).FirstOrDefault();
-                string userAddress = _context.People.Where(o=>o.Id==seller.idUser).Select(o=>o.Address).FirstOrDefault();
-                BillRes nes = new BillRes
+                string sellerName = _context.People.Where(o => o.Id == seller.idSeller).Select(o => o.Name).FirstOrDefault();
+                string userAddress = _context.People.Where(o => o.Id == seller.idUser).Select(o => o.Address).FirstOrDefault();
+                ResBill nes = new ResBill
                 {
                     Id = seller.idBill,
                     Iduser = seller.idUser,
@@ -100,17 +99,17 @@ namespace EcommerceAPI.Controllers
                             dateCreate = seller.DateCreate,
                             status = seller.Status
                         };
-            List<BillRes> resList = new List<BillRes>();
+            List<ResBill> resList = new List<ResBill>();
             foreach (var seller in query)
             {
                 string sellerName = _context.People.Where(o => o.Id == seller.idSeller).Select(o => o.Name).FirstOrDefault();
                 string userAddress = _context.People.Where(o => o.Id == seller.idUser).Select(o => o.Address).FirstOrDefault();
-                BillRes nes = new BillRes
+                ResBill nes = new ResBill
                 {
                     Id = seller.idBill,
                     Iduser = seller.idUser,
                     Idseller = seller.idSeller,
-                    DateCreate =  seller.dateCreate.ToString(),
+                    DateCreate = seller.dateCreate.ToString(),
                     Status = seller.status,
                     SellerName = sellerName,
                     UserAddress = userAddress,
@@ -128,7 +127,7 @@ namespace EcommerceAPI.Controllers
         {
             if (!BillExists(idBill))
             {
-                return Ok(new Respon { respone_code=404,Status ="not found"});
+                return Ok(new Respon { respone_code = 404, Status = "not found" });
             }
             Bill bill = await _context.Bills.Where(o => o.Id == idBill).SingleOrDefaultAsync();
             //if (bill.DateReceived != null)
@@ -143,9 +142,10 @@ namespace EcommerceAPI.Controllers
 
         [Route("CreateBill")]
         [HttpPost]
-        public async Task<ActionResult<IEnumerable<ResBill>>> CreateBill(BillReq billReq)
+        public async Task<ActionResult<IEnumerable<BillRes>>> CreateBill(BillReq billReq)
         {
-            ResBill res = new ResBill();
+
+            BillRes res = new BillRes();
             foreach (var billDetailReq in billReq.ListBillDetailReq)
             {
                 if (!ClotheExists(billDetailReq.Idclothes))
@@ -163,11 +163,12 @@ namespace EcommerceAPI.Controllers
                 }
             }
             var percentDiscount = _context.Vouchers.Where(o => o.Id == billReq.Idvoucher).Select(o => o.Ratio).SingleOrDefault();
+
             Bill bill = new()
             {
                 Iduser = billReq.Iduser,
                 Idseller = billReq.Idseller,
-                Idvoucher = percentDiscount,
+                Idvoucher = billReq.Idvoucher,
                 DateCreate = DateTime.UtcNow.Date,
                 Status = billReq.Status,
             };
@@ -175,7 +176,7 @@ namespace EcommerceAPI.Controllers
             await _context.SaveChangesAsync();
             foreach (var billDetailReq in billReq.ListBillDetailReq)
             {
-                ClothesProperty clothesProperty = await _context.ClothesProperties.Where(o => o.Idclothes == billDetailReq.Idclothes).SingleOrDefaultAsync();
+                var clothesProperty = await _context.ClothesProperties.Where(o => o.Idclothes == billDetailReq.Idclothes && o.Size == billDetailReq.Size).SingleOrDefaultAsync();
                 int temp = (int)clothesProperty.Quantily;
                 clothesProperty.Quantily = temp - billDetailReq.Quantily;
                 _context.Entry(clothesProperty).State = EntityState.Modified;
@@ -202,9 +203,10 @@ namespace EcommerceAPI.Controllers
                 test = 0;
             }
 
-            double s = double.Parse(totolPrice.ToString()) - ((double.Parse(totolPrice.ToString()) * test) / 100 );
+            double s = double.Parse(totolPrice.ToString()) - ((double.Parse(totolPrice.ToString()) * test) / 100);
             res._Respon = new Respon { respone_code = 200, Status = "success" };
             res._DateCreate = DateTime.Now.ToString();
+            res._TotolPrice = s.ToString();
             return Ok(res);
         }
 
@@ -220,8 +222,8 @@ namespace EcommerceAPI.Controllers
             }
 
 
-            var listIdClothesPropeties =_context.BillDetails.Where(o => o.Idbill == billId).Select(o=>o.IdclotheProperties);
-            
+            var listIdClothesPropeties = _context.BillDetails.Where(o => o.Idbill == billId).Select(o => o.IdclotheProperties);
+
             List<int> listIdClothes = new List<int>();
             foreach (var item in listIdClothesPropeties)
             {
@@ -237,7 +239,7 @@ namespace EcommerceAPI.Controllers
             {
                 var clothe = await _context.Clothes.FindAsync(item);
                 List<string> listImgUrls = await _context.ImgUrls.Where(x => x.Idclothes == item).Select(u => u.ImgUrl1).ToListAsync();
-                var total = _context.ClothesProperties.Where(o => o.Idclothes ==item).Select(o => o.Quantily).Sum();
+                var total = _context.ClothesProperties.Where(o => o.Idclothes == item).Select(o => o.Quantily).Sum();
                 var clothesRes = new ClothesRes
                 {
                     Id = clothe.Id,
@@ -251,7 +253,7 @@ namespace EcommerceAPI.Controllers
                 listRes.Add(clothesRes);
 
             }
-           
+
             resGetListClothes._Respon = new Respon { Status = "Success", respone_code = 200 };
             resGetListClothes._ClothesRes = listRes;
             return Ok(resGetListClothes);
@@ -273,12 +275,12 @@ namespace EcommerceAPI.Controllers
                             dateCreate = bill.DateCreate,
                             status = bill.Status
                         };
-            List<BillRes> resList = new List<BillRes>();
+            List<ResBill> resList = new List<ResBill>();
             foreach (var seller in query)
             {
                 string sellerName = _context.People.Where(o => o.Id == seller.idSeller).Select(o => o.Name).FirstOrDefault();
                 string userAddress = _context.People.Where(o => o.Id == seller.idUser).Select(o => o.Address).FirstOrDefault();
-                BillRes nes = new BillRes
+                ResBill nes = new ResBill
                 {
                     Id = seller.idBill,
                     Iduser = seller.idUser,
@@ -312,12 +314,12 @@ namespace EcommerceAPI.Controllers
                             dateCreate = bill.DateCreate,
                             status = bill.Status
                         };
-            List<BillRes> resList = new List<BillRes>();
+            List<ResBill> resList = new List<ResBill>();
             foreach (var seller in query)
             {
                 string sellerName = _context.People.Where(o => o.Id == seller.idSeller).Select(o => o.Name).FirstOrDefault();
                 string userAddress = _context.People.Where(o => o.Id == seller.idUser).Select(o => o.Address).FirstOrDefault();
-                BillRes nes = new BillRes
+                ResBill nes = new ResBill
                 {
                     Id = seller.idBill,
                     Iduser = seller.idUser,
@@ -339,13 +341,13 @@ namespace EcommerceAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ResGetBillPayment>>> GetBillPayment(int idBill)
         {
-           
+
             ResGetBillPayment res = new ResGetBillPayment();
             if (!BillExists(idBill))
             {
                 res._Respon = new Respon { respone_code = 404, Status = "Not Found" };
             }
-            Bill billReq = await _context.Bills.Where(o=>o.Id == idBill).FirstOrDefaultAsync();
+            Bill billReq = await _context.Bills.Where(o => o.Id == idBill).FirstOrDefaultAsync();
             var percentDiscount = _context.Vouchers.Where(o => o.Id == billReq.Idvoucher).Select(o => o.Ratio).SingleOrDefault();
             var totolPrice = _context.BillDetails.Where(o => o.Idbill == idBill).Sum(i => i.Price);
             double test = 0;
@@ -357,7 +359,7 @@ namespace EcommerceAPI.Controllers
             {
                 test = 0;
             }
-            
+
             double s = double.Parse(totolPrice.ToString()) - ((double.Parse(totolPrice.ToString()) * test / 100));
             Console.WriteLine(double.Parse(totolPrice.ToString()));
             Console.WriteLine(((double.Parse(totolPrice.ToString()) * test)));

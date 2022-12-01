@@ -1,8 +1,8 @@
-﻿using EdwardEcommerce.Models;
-using EcommerceAPI.Models.Models_Request;
+﻿using EcommerceAPI.Models.Models_Request;
 using EcommerceAPI.Models.Models_Respon;
 using EcommerceAPI.Models.Models_Respone;
 using EcommerceAPI.Models.Models_Responsive;
+using EdwardEcommerce.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 

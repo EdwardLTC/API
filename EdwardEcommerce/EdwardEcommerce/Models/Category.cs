@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace EdwardEcommerce.Models
+﻿namespace EdwardEcommerce.Models
 {
     public partial class Category
     {

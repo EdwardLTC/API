@@ -1,8 +1,10 @@
-﻿using EdwardEcommerce.Models;
-using EcommerceAPI.Models.Models_Request;
+﻿using EcommerceAPI.Models.Models_Request;
 using EcommerceAPI.Models.Models_Respon;
 using EcommerceAPI.Models.Models_Respone;
 using EcommerceAPI.Models.Models_Responsive;
+using EdwardEcommerce.Models;
+using EdwardEcommerce.Models.Models_Respon;
+using EdwardEcommerce.Models.Models_Responsive;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,7 +30,7 @@ namespace EcommerceAPI.Controller
             List<ClothesRes> res = new List<ClothesRes>();
             foreach (Clothe clothes in list)
             {
-                var maxPrices = _context.ClothesProperties.Where(o=>o.Idclothes == clothes.Id).Max(o => o.Price);
+                var maxPrices = _context.ClothesProperties.Where(o => o.Idclothes == clothes.Id).Max(o => o.Price);
                 var total = _context.ClothesProperties.Where(o => o.Idclothes == clothes.Id).Select(o => o.Quantily).Sum();
                 string categoryName = _context.Categories.Where(o => o.Id == clothes.IdCategory).Select(o => o.Name).SingleOrDefault();
                 ClothesRes respon = new ClothesRes
@@ -374,6 +376,50 @@ namespace EcommerceAPI.Controller
             return Ok(res);
         }
 
+        [Route("GetStatistical")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<ResGetStatistical>>> GetStatistical()
+        {
+            ResGetStatistical resGetStatistical = new ResGetStatistical();
+            List<ClothesStatisticalRes> res = new List<ClothesStatisticalRes>();
+            try
+            {
+                string query = "EXEC STATISTIC";
+                List<Statistical> result = _context.GetStatisticals.FromSqlRaw(query).AsEnumerable().ToList();
+                foreach (Statistical statistical in result)
+                {
+                    var clothe = await _context.Clothes.FindAsync(statistical.IDClothes);
+                    List<string> listImgUrls = await _context.ImgUrls.Where(x => x.Idclothes == statistical.IDClothes).Select(u => u.ImgUrl1).ToListAsync();
+                    var total = _context.ClothesProperties.Where(o => o.Idclothes == statistical.IDClothes).Select(o => o.Quantily).Sum();
+                    var maxPrices = _context.ClothesProperties.Where(o => o.Idclothes == statistical.IDClothes).Max(o => o.Price);
+                    string categoryName = _context.Categories.Where(o => o.Id == clothe.IdCategory).Select(o => o.Name).SingleOrDefault();
+                    var clothesRes = new ClothesStatisticalRes()
+                    {
+                        Id = clothe.Id,
+                        Name = clothe.Name,
+                        Idseller = clothe.Idseller,
+                        Des = clothe.Des,
+                        IdCategory = clothe.IdCategory,
+                        imgsUrl = listImgUrls,
+                        quantily = (int)total,
+                        maxPrice = maxPrices.ToString(),
+                        CategoryName = categoryName,
+                        BuyTime = statistical.Quantity
+                    };
+                    res.Add(clothesRes);
+                }
+                resGetStatistical._Respon = new Respon { respone_code = 200, Status = "Success" };
+                resGetStatistical.ClothesStatisticalRes = res;
+                return Ok(resGetStatistical);
+            }
+            catch
+            {
+                resGetStatistical._Respon = new Respon { respone_code = 400, Status = "bad request" };
+                return Ok(resGetStatistical);
+            }
+
+
+        }
 
         private bool ClotheExists(int id)
         {
