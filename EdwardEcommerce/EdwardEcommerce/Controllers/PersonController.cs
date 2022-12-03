@@ -170,15 +170,17 @@ namespace EcommerceAPI.Controller
         [HttpPost]
         public async Task<ActionResult<IEnumerable<Respon>>> PutPerson(PersonReq personReq)
         {
+            var psw = _context.People.Where(o => o.Id == personReq.Id).Select(o => o.Password).FirstOrDefault();
             var person = new Person
             {
                 Id = personReq.Id,
                 Name = personReq.Name,
                 Address = personReq.Address,
-                Role = personReq.Role,
-                Mail = personReq.Mail,
                 Img = personReq.ImgUrl,
-                PhoneNumber = personReq.PhoneNum
+                PhoneNumber = personReq.PhoneNum,
+                Role = personReq.Role,
+                Mail=personReq.Mail,
+                Password = psw
             };
             _context.Entry(person).State = EntityState.Modified;
             try

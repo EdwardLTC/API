@@ -7,6 +7,8 @@ using EdwardEcommerce.Models;
 using EdwardEcommerce.Models.Models_Responsive;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Drawing;
+using System.Security.Policy;
 
 namespace EcommerceAPI.Controllers
 {
@@ -102,7 +104,7 @@ namespace EcommerceAPI.Controllers
             List<ResBill> resList = new List<ResBill>();
             foreach (var seller in query)
             {
-                string sellerName = _context.People.Where(o => o.Id == seller.idSeller).Select(o => o.Name).FirstOrDefault();
+                string sellerName = _context.People.Where(o => o.Id == seller.idUser).Select(o => o.Name).FirstOrDefault();
                 string userAddress = _context.People.Where(o => o.Id == seller.idUser).Select(o => o.Address).FirstOrDefault();
                 ResBill nes = new ResBill
                 {
@@ -153,10 +155,15 @@ namespace EcommerceAPI.Controllers
                     res._Respon = new Respon { respone_code = 404, Status = $"not Found {billDetailReq.Idclothes}" };
                     return Ok(res);
                 }
-                var quantity = _context.ClothesProperties
-                .Where(o => o.Size == billDetailReq.Size && o.Idclothes == billDetailReq.Idclothes)
-                .Select(o => o.Quantily).FirstOrDefault();
-                if (billDetailReq.Quantily > quantity)
+                int k = 0;
+                var k1 = _context.ClothesProperties
+                     .Where(o => o.Size == billDetailReq.Size && o.Idclothes == billDetailReq.Idclothes)
+                     .Select(o => o.Quantily).FirstOrDefault();
+                if (k1 != null)
+                {
+                    k = (int)k1;
+                }
+                if (billDetailReq.Quantily > k)
                 {
                     res._Respon = new Respon { respone_code = 400, Status = "Bad Req" };
                     return Ok(res);
@@ -176,7 +183,7 @@ namespace EcommerceAPI.Controllers
             await _context.SaveChangesAsync();
             foreach (var billDetailReq in billReq.ListBillDetailReq)
             {
-                var clothesProperty = await _context.ClothesProperties.Where(o => o.Idclothes == billDetailReq.Idclothes && o.Size == billDetailReq.Size).SingleOrDefaultAsync();
+                ClothesProperty clothesProperty = await _context.ClothesProperties.Where(o => o.Idclothes == billDetailReq.Idclothes && o.Size == billDetailReq.Size).SingleOrDefaultAsync();
                 int temp = (int)clothesProperty.Quantily;
                 clothesProperty.Quantily = temp - billDetailReq.Quantily;
                 _context.Entry(clothesProperty).State = EntityState.Modified;
@@ -206,7 +213,7 @@ namespace EcommerceAPI.Controllers
             double s = double.Parse(totolPrice.ToString()) - ((double.Parse(totolPrice.ToString()) * test) / 100);
             res._Respon = new Respon { respone_code = 200, Status = "success" };
             res._DateCreate = DateTime.Now.ToString();
-            res._TotolPrice = s.ToString();
+            res._TotolPrice = String.Format("{0:0.00}", s);
             return Ok(res);
         }
 
@@ -239,7 +246,9 @@ namespace EcommerceAPI.Controllers
             {
                 var clothe = await _context.Clothes.FindAsync(item);
                 List<string> listImgUrls = await _context.ImgUrls.Where(x => x.Idclothes == item).Select(u => u.ImgUrl1).ToListAsync();
-                var total = _context.ClothesProperties.Where(o => o.Idclothes == item).Select(o => o.Quantily).Sum();
+                var idPro = _context.ClothesProperties.Where(o => o.Idclothes == item).Select(o => o.Id).FirstOrDefault();
+                var total = _context.BillDetails.Where(o => o.IdclotheProperties == idPro && o.Idbill == billId).Select(o => o.Quantity).Sum();
+                var Prices = _context.ClothesProperties.Where(o => o.Idclothes == item).Max(o => o.Price);
                 var clothesRes = new ClothesRes
                 {
                     Id = clothe.Id,
@@ -248,7 +257,8 @@ namespace EcommerceAPI.Controllers
                     Des = clothe.Des,
                     IdCategory = clothe.IdCategory,
                     imgsUrl = listImgUrls,
-                    quantily = (int)total
+                    quantily = (int)total,
+                    maxPrice = ((int)total * double.Parse(Prices.ToString())).ToString()
                 };
                 listRes.Add(clothesRes);
 
@@ -365,7 +375,7 @@ namespace EcommerceAPI.Controllers
             Console.WriteLine(((double.Parse(totolPrice.ToString()) * test)));
             Console.Write(totolPrice);
             res._Respon = new Respon { Status = "success", respone_code = 200 };
-            res._Payment = s.ToString();
+            res._Payment = String.Format("{0:0.00}", s);
             return Ok(res);
         }
 

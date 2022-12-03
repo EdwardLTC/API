@@ -72,6 +72,13 @@ namespace EcommerceAPI.Controllers
         {
             Respon res = new Respon();
             Favorite favorite = new Favorite { Idclothes = favoritereq.Idclothes, Iduser = favoritereq.Iduser };
+            var favorite1 = await _context.Favorites.Where(x => x.Iduser == favoritereq.Iduser && x.Idclothes == favoritereq.Idclothes).FirstOrDefaultAsync();
+            if(favorite1!= null)
+            {
+                res.respone_code = 400;
+                res.Status = "Existed";
+                return Ok(res);
+            }
             if (!PersonExists(favoritereq.Iduser))
             {
                 res.respone_code = 404;
