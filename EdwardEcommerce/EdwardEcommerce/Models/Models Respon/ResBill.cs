@@ -10,5 +10,6 @@
         public string? Status { get; set; }
         public string? SellerName { get; set; }
         public string? UserAddress { get; set; }
+
     }
 }

@@ -7,9 +7,10 @@
         public int? IdCategory { get; set; }
         public string? Des { get; set; }
         public string? Name { get; set; }
-        public List<String> imgsUrl { get; set; }
-        public int quantily { get; set; }
-        public string maxPrice { get; set; }
+        public List<String>? imgsUrl { get; set; }
+        public int? quantily { get; set; }
+        public string? maxPrice { get; set; }
         public string CategoryName { get; set; }
+        public string size { get; set; }
     }
 }

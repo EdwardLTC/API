@@ -7,8 +7,6 @@ using EdwardEcommerce.Models;
 using EdwardEcommerce.Models.Models_Responsive;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Drawing;
-using System.Security.Policy;
 
 namespace EcommerceAPI.Controllers
 {
@@ -61,7 +59,7 @@ namespace EcommerceAPI.Controllers
             List<ResBill> resList = new List<ResBill>();
             foreach (var seller in query)
             {
-                string sellerName = _context.People.Where(o => o.Id == seller.idSeller).Select(o => o.Name).FirstOrDefault();
+                string userName = _context.People.Where(o => o.Id == seller.idSeller).Select(o => o.Name).FirstOrDefault();
                 string userAddress = _context.People.Where(o => o.Id == seller.idUser).Select(o => o.Address).FirstOrDefault();
                 ResBill nes = new ResBill
                 {
@@ -70,7 +68,7 @@ namespace EcommerceAPI.Controllers
                     Idseller = seller.idSeller,
                     DateCreate = seller.dateCreate.ToString(),
                     Status = seller.status,
-                    SellerName = sellerName,
+                    SellerName = userName,
                     UserAddress = userAddress,
                 };
                 resList.Add(nes);
@@ -165,7 +163,7 @@ namespace EcommerceAPI.Controllers
                 }
                 if (billDetailReq.Quantily > k)
                 {
-                    res._Respon = new Respon { respone_code = 400, Status = "Bad Req" };
+                    res._Respon = new Respon { respone_code = 400, Status = $"Bad Req {billDetailReq.Idclothes} size {billDetailReq.Size}" };
                     return Ok(res);
                 }
             }
@@ -229,38 +227,97 @@ namespace EcommerceAPI.Controllers
             }
 
 
-            var listIdClothesPropeties = _context.BillDetails.Where(o => o.Idbill == billId).Select(o => o.IdclotheProperties);
-
-            List<int> listIdClothes = new List<int>();
+            var listIdClothesPropeties = _context.BillDetails.Where(o => o.Idbill == billId).Select(o => o.IdclotheProperties );
+            List<ClothesRes> listRes = new List<ClothesRes>();
             foreach (var item in listIdClothesPropeties)
             {
-                var result = _context.ClothesProperties.Where(o => o.Id == item).Select(o => o.Idclothes);
-                foreach (var id in result)
+             
+                var result = from clthePro in _context.ClothesProperties
+                             where clthePro.Id == item
+                             select new
+                             {
+                                 idc = clthePro.Idclothes,
+                                 size = clthePro.Size
+                             };
+
+                foreach (var idClothes in result)
                 {
-                    listIdClothes.Add(id.Value);
+                    var clothe = await _context.Clothes.FindAsync(idClothes.idc);
+                    var listImgUrls = await _context.ImgUrls.Where(x => x.Idclothes == (int)idClothes.idc).Select(u => u.ImgUrl1).ToListAsync();
+                    var idPro = _context.ClothesProperties.Where(o => o.Idclothes == (int)idClothes.idc && o.Size == idClothes.size ).Select(o => o.Id).FirstOrDefault();
+                    var total = _context.BillDetails.Where(o => o.IdclotheProperties == idPro && o.Idbill == billId).Select(o => o.Quantity).Sum();
+                    var size = _context.ClothesProperties.Where(o => o.Id == item && o.Idclothes == (int)idClothes.idc).Select(o => o.Size).FirstOrDefault();
+                    var price = _context.ClothesProperties.Where(o => o.Id == item && o.Idclothes == (int)idClothes.idc).Max(o => o.Price);
+
+                    ClothesRes clothesRes = new ClothesRes
+                    {
+                        Id = (int)idClothes.idc,
+                        Name = clothe.Name,
+                        Idseller = clothe.Idseller,
+                        Des = clothe.Des,
+                        IdCategory = clothe.IdCategory,
+                        imgsUrl = listImgUrls,
+                        quantily = (int)total,
+                        maxPrice = ((int)total * double.Parse(price.ToString())).ToString(),
+                        size = size.ToString()
+                    };
+                    listRes.Add(clothesRes);
                 }
             }
 
+            resGetListClothes._Respon = new Respon { Status = "Success", respone_code = 200 };
+            resGetListClothes._ClothesRes = listRes;
+            return Ok(resGetListClothes);
+        }
+
+        [Route("GetClothesFromBillCustomer")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<ResGetListClothes>>> GetClothesFromBillCustomer(int idCus, int billId )
+        {
+            ResGetListClothes resGetListClothes = new ResGetListClothes();
             List<ClothesRes> listRes = new List<ClothesRes>();
-            foreach (var item in listIdClothes)
+            if (!PersonExists(idCus) || !BillExists(billId))
             {
-                var clothe = await _context.Clothes.FindAsync(item);
-                List<string> listImgUrls = await _context.ImgUrls.Where(x => x.Idclothes == item).Select(u => u.ImgUrl1).ToListAsync();
-                var idPro = _context.ClothesProperties.Where(o => o.Idclothes == item).Select(o => o.Id).FirstOrDefault();
-                var total = _context.BillDetails.Where(o => o.IdclotheProperties == idPro && o.Idbill == billId).Select(o => o.Quantity).Sum();
-                var Prices = _context.ClothesProperties.Where(o => o.Idclothes == item).Max(o => o.Price);
-                var clothesRes = new ClothesRes
+                resGetListClothes._Respon = new Respon { Status = "not found", respone_code = 404 };
+                return Ok(resGetListClothes);
+            }
+            var listBillId = _context.Bills.Where(o => o.Id == billId && o.Iduser == idCus).Select(o => o.Id);
+            foreach(var idbill in listBillId)
+            {
+                var listIdClothesPropeties = _context.BillDetails.Where(o => o.Idbill == idbill).Select(o => o.IdclotheProperties);
+                foreach (var item in listIdClothesPropeties)
                 {
-                    Id = clothe.Id,
-                    Name = clothe.Name,
-                    Idseller = clothe.Idseller,
-                    Des = clothe.Des,
-                    IdCategory = clothe.IdCategory,
-                    imgsUrl = listImgUrls,
-                    quantily = (int)total,
-                    maxPrice = ((int)total * double.Parse(Prices.ToString())).ToString()
-                };
-                listRes.Add(clothesRes);
+                    var result = from clthePro in _context.ClothesProperties
+                                 where clthePro.Id == item
+                                 select new
+                                 {
+                                     idc = clthePro.Idclothes,
+                                     size = clthePro.Size
+                                 };
+                    foreach (var idClothes in result)
+                    {
+                        var clothe = await _context.Clothes.FindAsync(idClothes.idc);
+                        var listImgUrls = await _context.ImgUrls.Where(x => x.Idclothes == idClothes.idc).Select(u => u.ImgUrl1).ToListAsync();
+                        var idPro = _context.ClothesProperties.Where(o => o.Idclothes == idClothes.idc && o.Size == idClothes.size).Select(o => o.Id).FirstOrDefault();
+                        var total = _context.BillDetails.Where(o => o.IdclotheProperties == idPro && o.Idbill == idbill).Select(o => o.Quantity).Sum();
+                        var size = _context.ClothesProperties.Where(o => o.Id == item && o.Idclothes == idClothes.idc).Select(o => o.Size).FirstOrDefault();
+                        var price = _context.ClothesProperties.Where(o => o.Id == item && o.Idclothes == idClothes.idc).Max(o => o.Price);
+
+                        ClothesRes clothesRes = new ClothesRes
+                        {
+                            Id = (int)idClothes.idc,
+                            Name = clothe.Name,
+                            Idseller = clothe.Idseller,
+                            Des = clothe.Des,
+                            IdCategory = clothe.IdCategory,
+                            imgsUrl = listImgUrls,
+                            quantily = (int)total,
+                            maxPrice = ((int)total * double.Parse(price.ToString())).ToString(),
+                            size = size.ToString()
+                        };
+                        listRes.Add(clothesRes);
+                    }
+                }
 
             }
 
@@ -288,8 +345,8 @@ namespace EcommerceAPI.Controllers
             List<ResBill> resList = new List<ResBill>();
             foreach (var seller in query)
             {
-                string sellerName = _context.People.Where(o => o.Id == seller.idSeller).Select(o => o.Name).FirstOrDefault();
-                string userAddress = _context.People.Where(o => o.Id == seller.idUser).Select(o => o.Address).FirstOrDefault();
+                var sellerName = _context.People.Where(o => o.Id == seller.idUser).Select(o => o.Name).FirstOrDefault();
+                var userAddress = _context.People.Where(o => o.Id == seller.idUser).Select(o => o.Address).FirstOrDefault();
                 ResBill nes = new ResBill
                 {
                     Id = seller.idBill,
@@ -308,9 +365,49 @@ namespace EcommerceAPI.Controllers
             return Ok(resGetListBill);
         }
 
+        [Route("GetBillWhereCompletedSeller")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<ResGetListBill>>> GetBillWhereCompletedSeller(int idSeller)
+        {
+            ResGetListBill resGetListBill = new ResGetListBill();
+            var query = from bill in _context.Bills
+                        where bill.Status == "Bill Completed" && bill.Idseller == idSeller
+                        select new
+                        {
+                            idBill = bill.Id,
+                            idSeller = bill.Idseller,
+                            idVoucher = bill.Idvoucher,
+                            idUser = bill.Iduser,
+                            dateCreate = bill.DateCreate,
+                            status = bill.Status
+                        };
+            List<ResBill> resList = new List<ResBill>();
+            foreach (var seller in query)
+            {
+                var sellerName = _context.People.Where(o => o.Id == seller.idUser).Select(o => o.Name).FirstOrDefault();
+                var userAddress = _context.People.Where(o => o.Id == seller.idUser).Select(o => o.Address).FirstOrDefault();
+                ResBill nes = new ResBill
+                {
+                    Id = seller.idBill,
+                    Iduser = seller.idUser,
+                    Idseller = seller.idSeller,
+                    Idvoucher = seller.idVoucher,
+                    DateCreate = seller.dateCreate.ToString(),
+                    Status = seller.status,
+                    SellerName = sellerName,
+                    UserAddress = userAddress,
+                };
+                resList.Add(nes);
+            }
+            resGetListBill._Respon = new Respon { Status = "Success", respone_code = 200 };
+            resGetListBill._BillRes = resList;
+            return Ok(resGetListBill);
+        }
+
+
         [Route("GetBillWhereNotCompleted")]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ResGetListBill>>> GetBillWhereNotCompleted()
+        public async Task<ActionResult<IEnumerable<ResGetListBill>>> GetBillWhereNotCompleted() 
         {
             ResGetListBill resGetListBill = new ResGetListBill();
             var query = from bill in _context.Bills
@@ -327,8 +424,8 @@ namespace EcommerceAPI.Controllers
             List<ResBill> resList = new List<ResBill>();
             foreach (var seller in query)
             {
-                string sellerName = _context.People.Where(o => o.Id == seller.idSeller).Select(o => o.Name).FirstOrDefault();
-                string userAddress = _context.People.Where(o => o.Id == seller.idUser).Select(o => o.Address).FirstOrDefault();
+                var sellerName = _context.People.Where(o => o.Id == seller.idUser).Select(o => o.Name).FirstOrDefault();
+                var userAddress = _context.People.Where(o => o.Id == seller.idUser).Select(o => o.Address).FirstOrDefault();
                 ResBill nes = new ResBill
                 {
                     Id = seller.idBill,
